@@ -1,2 +1,4 @@
 cassandra-driver
 nats-py
+grpcio
+grpcio-tools
