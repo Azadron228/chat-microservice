@@ -1,0 +1,6 @@
+fastapi
+pydantic
+nats-py
+uvicorn
+pydantic-settings
+websockets
