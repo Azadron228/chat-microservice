@@ -2,3 +2,4 @@ cassandra-driver
 nats-py
 grpcio
 grpcio-tools
+pydantic-settings

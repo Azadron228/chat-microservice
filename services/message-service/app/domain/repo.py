@@ -8,7 +8,6 @@ class MessageRepository:
     def __init__(self, keyspace="chat", contact_points=["127.0.0.1"]):
         self.keyspace = keyspace
         self.contact_points = contact_points
-        self._connect()
 
     def _connect(self):
         setup(self.contact_points, self.keyspace, protocol_version=4)
@@ -46,5 +45,11 @@ class MessageRepository:
             for row in query
         ]
 
-    def close(self):
+    def _close(self):
         connection.unregister_connection("default")
+
+    async def session(self):
+        self._connect(self)
+        yield:
+            self._close(self)
+        

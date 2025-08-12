@@ -1,34 +1,31 @@
-import json
-import uuid
-from datetime import datetime
-from cassandra.cqlengine import columns
-from cassandra.cqlengine.models import Model
-from cassandra.cqlengine.management import sync_table
-from cassandra.cqlengine.connection import setup
-from cassandra.cqlengine.query import DoesNotExist
-from cassandra.cqlengine import connection
-from app.protos import message_pb2, message_pb2_grpc
-from app.server import serve
+import asyncio
+from contextlib import asynccontextmanager
+import logging
+from app.core.messaging.factory import broker
+import app.core.logging
+import app.core.messaging.handlers
 
-from app.nats import connect_nats, disconnect_nats, nc, nats_message_handler
-from app.repo import MessageRepository
+logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan():
+    await broker.connect()
+    logger.info("Connected to broker")
+    try:
+        yield
+    finally:
+        await broker.close()
+        logger.info("Broker connection closed")
+
 
 async def main():
-    global repo
-    repo = MessageRepository()
+    async with lifespan():
+        try:
+            # gRPC server should block here
+            ...
+        except KeyboardInterrupt:
+            await exit()
 
-    await connect_nats()
-    await nc.subscribe("message.created", cb=nats_message_handler)
-
-    print("NATS connected and message handler set up.")
-
-    try:
-        while True:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        repo.close()
-        await disconnect_nats()
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(serve())
+    asyncio.run(main())
