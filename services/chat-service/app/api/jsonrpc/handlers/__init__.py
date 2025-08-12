@@ -1,0 +1,1 @@
+from app.api.jsonrpc.handlers import chat

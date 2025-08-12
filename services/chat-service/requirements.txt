@@ -4,3 +4,5 @@ nats-py
 uvicorn
 pydantic-settings
 websockets
+grpcio
+grpcio-tools

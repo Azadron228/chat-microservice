@@ -1,12 +1,23 @@
 ```json
 
 {
-    "method": "send_message",
-    "params": {
-        "room_id": "123",
-        "content": "Hello world"
-    },
-    "id":"random_str"
+  "method": "chat.send_message",
+  "params": {
+    "content": "Hello",
+    "room_id": "123"
+  }
+}
+
+```
+
+
+```json
+
+{
+  "method": "chat.join_room",
+  "params": {
+    "room_id": "123"
+  }
 }
 
 ```

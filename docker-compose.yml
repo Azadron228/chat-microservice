@@ -1,20 +1,19 @@
 services:
-  # chat-service:
-  #   build:
-  #     context: chat-service/
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - chat-service/.env
-  #   networks:
-  #     - chat-network
+  chat-service:
+    build:
+      context: services/chat-service/
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - services/chat-service/.env
+    networks:
+      - chat-network
   
   nats:
     image: nats:2.11-alpine
     ports:
       - "4222:4222"
-      - "6222:6222"
     networks:
       - chat-network
 
