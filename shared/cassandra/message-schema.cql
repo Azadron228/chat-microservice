@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS chat.messages (
     media_ids LIST<UUID>,
     reply_to UUID,
     quote TEXT,
+    is_deleted BOOLEAN,
     PRIMARY KEY ((room_id), message_id)
 );
 

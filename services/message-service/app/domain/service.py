@@ -22,8 +22,7 @@ class MessageService:
             timestamp=timestamp
         )
         
-        await broker.publish("message.saved", message)
-        logger.info(f"Published new message {message_id} to topic 'message.saved'")
+        await broker.publish("message.to_broadcast", message)
         
         return message
     

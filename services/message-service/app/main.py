@@ -4,6 +4,9 @@ import logging
 from app.core.messaging.factory import broker
 import app.core.logging
 import app.core.messaging.handlers
+from app.core.messaging.handlers.message import handle_new_message
+from app.core.messaging.factory import broker
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +24,8 @@ async def lifespan():
 async def main():
     async with lifespan():
         try:
-            # gRPC server should block here
-            ...
+            await broker.subscribe("*message.to_save",handle_new_message)
+            await asyncio.sleep(100)  # Keep the server running indefinitely
         except KeyboardInterrupt:
             await exit()
 

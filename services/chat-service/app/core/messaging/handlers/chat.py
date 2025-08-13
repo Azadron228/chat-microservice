@@ -2,27 +2,6 @@ import json
 from app.domain.chat.service import rooms,remove_client_from_all_rooms
 from app.core.messaging.factory import broker
 
-async def subscribe_to_room_handler(data: dict):
-    room_id = data.get("room_id")
-    content = data.get("content")
-    
-    if not room_id or not content:
-        return
-
-    clients = rooms.get(room_id, set())
-    
-    for client in clients:
-        try:
-            await client.send_text(json.dumps({
-                "type": "message",
-                "room_id": room_id,
-                "content": content
-            }))
-        except Exception as e:
-            # Remove disconnected clients
-            remove_client_from_all_rooms(client)
-
-
 async def subscribe_to_room(room_id):
     async def subscribe_to_room_handler(data: dict):
         room_id = data.get("room_id")
