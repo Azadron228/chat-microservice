@@ -12,8 +12,6 @@ async def hello(user):
 async def join_room(websocket, room_id):
     add_client_to_room(room_id, websocket)
 
-    await subscribe_to_room(room_id=f"room.{room_id}")
-
     return {
         "room_id": room_id
     }
@@ -21,11 +19,10 @@ async def join_room(websocket, room_id):
 @jsonrpc("chat.send_message")
 async def handle_send_message(user:dict, room_id:str, content: str):
 
-    await broker.publish(f"room.{room_id}.message.to_save", {
-        "type": "message",
+    await broker.publish("chat.messages.message.to_save", {
         "content": content,
         "room_id": room_id,
-        "user_id": user["name"]
+        "author_id": user["name"]
     })
 
 

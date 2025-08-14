@@ -1,3 +1,4 @@
+import json
 import uuid
 import logging
 from datetime import datetime
@@ -11,18 +12,30 @@ class MessageService:
         self.repo = repo
 
     async def create_message(self, room_id: str, sender_id: str, content: str) -> dict:
-        message_id = str(uuid.uuid4())
+        message_id = uuid.uuid4()
         timestamp = datetime.now()
         
-        message = await self.repo.save_message(
-            message_id=message_id,
-            room_id=room_id,
-            sender_id=sender_id,
-            content=content,
-            timestamp=timestamp
-        )
-        
-        await broker.publish("message.to_broadcast", message)
+        message = {
+            "message_id": str(message_id),
+            "room_id": room_id,
+            "sender_id": sender_id,
+            "content": content,
+            "timestamp": timestamp.isoformat(),
+        }
+
+        try: 
+            await self.repo.save_message(
+                message_id=message_id,
+                room_id=room_id,
+                sender_id=sender_id,
+                content=content,
+                timestamp=timestamp
+            )
+        except Exception as e:
+            logger.info(f"Error saving message with repo: {str(e)}")
+            return {"error": "Failed to save message"}
+
+        await broker.publish("chat.messages.to_broadcast", message=message)
         
         return message
     

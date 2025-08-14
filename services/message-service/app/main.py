@@ -24,7 +24,7 @@ async def lifespan():
 async def main():
     async with lifespan():
         try:
-            await broker.subscribe("*message.to_save",handle_new_message)
+            await broker.subscribe("chat.messages.message.to_save",handle_new_message)
             await asyncio.sleep(100)  # Keep the server running indefinitely
         except KeyboardInterrupt:
             await exit()

@@ -17,7 +17,8 @@
   "method": "chat.join_room",
   "params": {
     "room_id": "123"
-  }
+  },
+  "id":"1"
 }
 
 ```
