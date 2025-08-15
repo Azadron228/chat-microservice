@@ -4,17 +4,33 @@ from datetime import datetime
 from app.core.casssandra import await_response_future
 
 
+import uuid
+from datetime import datetime
+from cassandra.cluster import Session, PreparedStatement
+from typing import List, Optional
+from uuid import UUID
+
+
 class MessageRepository:
-    def __init__(self, session):
+    def __init__(self, session: Session):
         self.session = session
+
+        # Insert message
         self.insert_message_ps: PreparedStatement = session.prepare("""
             INSERT INTO chat.messages (
-                room_id, created_at, updated_at, message_id,
-                sender_id, content, media_ids, reply_to,
-                quote
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                room_id, message_id, author_id,
+                content, media_ids, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """)
 
+        # Update message content
+        self.update_message_ps: PreparedStatement = session.prepare("""
+            UPDATE chat.messages
+            SET content = ?, updated_at = ?
+            WHERE room_id = ? AND message_id = ?
+        """)
+
+        # Get recent messages from a room
         self.get_recent_messages_ps: PreparedStatement = session.prepare("""
             SELECT * FROM chat.messages
             WHERE room_id = ?
@@ -22,23 +38,14 @@ class MessageRepository:
             LIMIT ?
         """)
 
-        self.get_message_ps: PreparedStatement = session.prepare("""
-            SELECT * FROM chat.messages
-            WHERE room_id = ? AND message_id = ?
-        """)
-
-        self.update_message_ps: PreparedStatement = session.prepare("""
-            UPDATE chat.messages
-            SET content = ?, updated_at = ?
-            WHERE room_id = ? AND message_id = ?
-        """)
-
+        # Insert or update user status
         self.update_status_ps: PreparedStatement = session.prepare("""
             INSERT INTO chat.message_user_status (
                 message_id, user_id, status, delivered_at, seen_at
             ) VALUES (?, ?, ?, ?, ?)
         """)
 
+        # Get user status
         self.get_status_ps: PreparedStatement = session.prepare("""
             SELECT * FROM chat.message_user_status
             WHERE message_id = ? AND user_id = ?
@@ -46,64 +53,80 @@ class MessageRepository:
 
     async def save_message(
         self,
+        room_id: UUID,
         message_id: UUID,
-        room_id: str,
-        sender_id: str,
+        author_id: UUID,
         content: str,
-        timestamp: datetime,
-        media_ids=None,
-        reply_to=None,
-        quote=None,
+        media_ids: Optional[List[UUID]],
+        timestamp: datetime
     ):
-        print(message_id)
         future = self.session.execute_async(
             self.insert_message_ps,
             (
                 room_id,
-                timestamp,
-                timestamp,
                 message_id,
-                sender_id,
+                author_id,
                 content,
                 media_ids or [],
-                reply_to,
-                quote,
-            ),
+                timestamp,
+                timestamp
+            )
         )
         await await_response_future(future)
 
-    # async def get_recent_messages(self, room_id: str, limit: int = 50):
-    #     future = await self.session.execute_async(
-    #         self.get_recent_messages_ps, (room_id, limit)
-    #     )
-    #     rows = await await_response_future(future)
-    #     return list(rows)
+    async def list_messages(
+        self,
+        room_id: UUID,
+        limit: int = 50
+    ):
+        future = self.session.execute_async(
+            self.get_recent_messages_ps,
+            (room_id, limit)
+        )
+        result = await await_response_future(future)
+        return list(result)
 
-    # async def get_message(self, room_id: str, message_id: UUID):
-    #     future = await self.session.execute_async(
-    #         self.get_message_ps, (room_id, message_id)
-    #     )
-    #     row = await await_response_future(future)
-    #     return row.one()
 
-    # async def update_message(self, room_id: str, message_id: UUID, content: str):
-    #     future = await self.session.execute_async(
-    #         self.update_message_ps, (content, datetime.now(), room_id, message_id)
-    #     )
-    #     await await_response_future(future)
+    async def update_message(
+        self,
+        room_id: UUID,
+        message_id: UUID,
+        content: str,
+        updated_at: datetime
+    ):
+        future = self.session.execute_async(
+            self.update_message_ps,
+            (
+                content,
+                updated_at,
+                room_id,
+                message_id
+            )
+        )
+        await await_response_future(future)
 
-    # async def update_status(self, message_id: UUID, user_id: str, status: int):
-    #     now = datetime.now()
-    #     delivered_at = now if status == 0 else None
-    #     seen_at = now if status == 1 else None
-    #     future = await self.session.execute_async(
-    #         self.update_status_ps, (message_id, user_id, status, delivered_at, seen_at)
-    #     )
-    #     await await_response_future(future)
+    async def update_status(
+        self,
+        message_id: UUID,
+        user_id: UUID,
+        status: int,
+        delivered_at: Optional[datetime] = None,
+        seen_at: Optional[datetime] = None
+    ):
+        future = self.session.execute_async(
+            self.update_status_ps,
+            (
+                message_id,
+                user_id,
+                status,
+                delivered_at,
+                seen_at
+            )
+        )
+        await await_response_future(future)
 
-    # async def get_status(self, message_id: UUID, user_id: str):
-    #     future = await self.session.execute_async(
-    #         self.get_status_ps, (message_id, user_id)
-    #     )
-    #     row = await await_response_future(future)
-    #     return row.one()
+    async def get_status(self, message_id: UUID, user_id: UUID):
+        return await await_response_future(
+            self.session.execute_async(self.get_status_ps, (message_id, user_id))
+        )
+

@@ -6,23 +6,20 @@ WITH REPLICATION = {
 
 
 CREATE TABLE IF NOT EXISTS chat.messages (
-    room_id TEXT,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
+    room_id UUID,
     message_id UUID,
-    sender_id TEXT,
+    author_id UUID,
     content TEXT,
     media_ids LIST<UUID>,
-    reply_to UUID,
-    quote TEXT,
-    is_deleted BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
     PRIMARY KEY ((room_id), message_id)
 );
 
 
 CREATE TABLE IF NOT EXISTS chat.message_user_status (
     message_id UUID,
-    user_id TEXT,
+    user_id UUID,
     status INT, -- 0: delivered, 1: seen
     delivered_at TIMESTAMP,
     seen_at TIMESTAMP,
