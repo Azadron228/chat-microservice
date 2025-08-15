@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import app.core.grpc.gen.message_pb2 as message__pb2
+from protos import message_pb2 as protos_dot_message__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in message_pb2_grpc.py depends on'
+        + f' but the generated code in protos/message_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -37,13 +37,13 @@ class MessageServiceStub(object):
         """
         self.ListMessages = channel.unary_unary(
                 '/message.MessageService/ListMessages',
-                request_serializer=message__pb2.ListMessagesRequest.SerializeToString,
-                response_deserializer=message__pb2.ListMessagesResponse.FromString,
+                request_serializer=protos_dot_message__pb2.ListMessagesRequest.SerializeToString,
+                response_deserializer=protos_dot_message__pb2.ListMessagesResponse.FromString,
                 _registered_method=True)
         self.GetMessageStatus = channel.unary_unary(
                 '/message.MessageService/GetMessageStatus',
-                request_serializer=message__pb2.GetMessageStatusRequest.SerializeToString,
-                response_deserializer=message__pb2.MessagesResponse.FromString,
+                request_serializer=protos_dot_message__pb2.GetMessageStatusRequest.SerializeToString,
+                response_deserializer=protos_dot_message__pb2.MessagesResponse.FromString,
                 _registered_method=True)
 
 
@@ -70,13 +70,13 @@ def add_MessageServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ListMessages': grpc.unary_unary_rpc_method_handler(
                     servicer.ListMessages,
-                    request_deserializer=message__pb2.ListMessagesRequest.FromString,
-                    response_serializer=message__pb2.ListMessagesResponse.SerializeToString,
+                    request_deserializer=protos_dot_message__pb2.ListMessagesRequest.FromString,
+                    response_serializer=protos_dot_message__pb2.ListMessagesResponse.SerializeToString,
             ),
             'GetMessageStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.GetMessageStatus,
-                    request_deserializer=message__pb2.GetMessageStatusRequest.FromString,
-                    response_serializer=message__pb2.MessagesResponse.SerializeToString,
+                    request_deserializer=protos_dot_message__pb2.GetMessageStatusRequest.FromString,
+                    response_serializer=protos_dot_message__pb2.MessagesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -105,8 +105,8 @@ class MessageService(object):
             request,
             target,
             '/message.MessageService/ListMessages',
-            message__pb2.ListMessagesRequest.SerializeToString,
-            message__pb2.ListMessagesResponse.FromString,
+            protos_dot_message__pb2.ListMessagesRequest.SerializeToString,
+            protos_dot_message__pb2.ListMessagesResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -132,8 +132,8 @@ class MessageService(object):
             request,
             target,
             '/message.MessageService/GetMessageStatus',
-            message__pb2.GetMessageStatusRequest.SerializeToString,
-            message__pb2.MessagesResponse.FromString,
+            protos_dot_message__pb2.GetMessageStatusRequest.SerializeToString,
+            protos_dot_message__pb2.MessagesResponse.FromString,
             options,
             channel_credentials,
             insecure,
