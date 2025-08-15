@@ -1,15 +1,32 @@
 services:
-  # chat-service:
-  #   build:
-  #     context: services/chat-service/
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - services/chat-service/.env
-  #   networks:
-  #     - chat-network
-  
+  chat-service:
+    build:
+      context: services/chat-service/
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - services/chat-service/.env
+    networks:
+      - chat-network
+    depends_on:
+      cassandra:
+        condition: service_healthy
+
+  message-service:
+    build:
+      context: services/message-service/
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    env_file:
+      - services/message-service/.env
+    networks:
+      - chat-network
+    depends_on:
+      cassandra:
+        condition: service_healthy
+
   nats:
     image: nats:2.11-alpine
     ports:
@@ -31,6 +48,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - chat-network
 
 volumes:
   cassandra_data:

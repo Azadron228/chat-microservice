@@ -2,92 +2,43 @@ syntax = "proto3";
 
 package message;
 
-import "google/protobuf/timestamp.proto";
-
+// MessageService defines the gRPC service for handling messages
 service MessageService {
-  // Send new message
-  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  // ListMessages retrieves a list of messages for a given room
+  rpc ListMessages (ListMessagesRequest) returns (ListMessagesResponse);
 
-  // Get messages for a room
-  rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse);
-
-  // Set status for a message-user
-  rpc SetMessageStatus(SetMessageStatusRequest) returns (SetMessageStatusResponse);
-
-  // Get all statuses for a message
-  rpc GetMessageStatuses(GetMessageStatusesRequest) returns (GetMessageStatusesResponse);
+  // GetMessageStatus retrieves the status of a specific message
+  rpc GetMessageStatus (GetMessageStatusRequest) returns (MessagesResponse);
 }
 
-// --- Message Structs ---
-
-message SendMessageRequest {
-  string room_id = 1;
-  string sender_id = 2;
-  string content = 3;
-  repeated string media_ids = 4;
-  string reply_to = 5;
-  string quote = 6;
+// Request message for ListMessages
+message ListMessagesRequest {
+  string room_id = 1; // UUID of the room
+  int32 limit = 2;   // Maximum number of messages to return
 }
 
-message SendMessageResponse {
-  string message_id = 1;
-  google.protobuf.Timestamp timestamp = 2;
+// Response message for ListMessages
+message ListMessagesResponse {
+  repeated MessageResponse messages = 1; // List of messages
 }
 
-message GetMessagesRequest {
-  string room_id = 1;
-  int32 limit = 2;
-  string after_message_id = 3; // for pagination
+// Request message for GetMessageStatus
+message GetMessageStatusRequest {
+  string message_id = 1; // UUID of the message
 }
 
-message GetMessagesResponse {
-  repeated ChatMessage messages = 1;
+// Response message for GetMessageStatus
+message MessagesResponse {
+  repeated MessageResponse messages = 1; // Single message status
 }
 
-message ChatMessage {
-  string message_id = 1;
-  string room_id = 2;
-  google.protobuf.Timestamp timestamp = 3;
-  string sender_id = 4;
-  string content = 5;
-  repeated string media_ids = 6;
-  string reply_to = 7;
-  string quote = 8;
-}
-
-// --- Message Status Structs ---
-
-message SetMessageStatusRequest {
-  string message_id = 1;
-  string user_id = 2;
-  MessageStatus status = 3;
-  google.protobuf.Timestamp delivered_at = 4;
-  google.protobuf.Timestamp seen_at = 5;
-}
-
-message SetMessageStatusResponse {
-  bool success = 1;
-}
-
-message GetMessageStatusesRequest {
-  string message_id = 1;
-}
-
-message GetMessageStatusesResponse {
-  repeated UserStatus statuses = 1;
-}
-
-message UserStatus {
-  string user_id = 1;
-  MessageStatus status = 2;
-  google.protobuf.Timestamp delivered_at = 3;
-  google.protobuf.Timestamp seen_at = 4;
-}
-
-// --- Enums ---
-
-enum MessageStatus {
-  SENT = 0;
-  DELIVERED = 1;
-  SEEN = 2;
+// Message response structure
+message MessageResponse {
+  string message_id = 1;  // UUID of the message
+  string room_id = 2;    // UUID of the room
+  string author_id = 3;  // UUID of the room
+  string content = 4;    // Content of the message
+  string status = 5;     // Status of the message
+  int64 created_at = 6;   // Timestamp of the message
+  int64 updated_at = 7;   // Timestamp of the message
 }
