@@ -1,7 +1,7 @@
 from cassandra.query import PreparedStatement
 from uuid import UUID
 from datetime import datetime
-from app.core.casssandra import await_response_future
+from app.core.casssandra import await_response_future, get_session
 
 
 import uuid
@@ -130,3 +130,6 @@ class MessageRepository:
             self.session.execute_async(self.get_status_ps, (message_id, user_id))
         )
 
+async def message_repo_factory() -> MessageRepository:
+    async with get_session() as session:
+        return MessageRepository(session)

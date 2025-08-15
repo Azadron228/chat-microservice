@@ -4,7 +4,7 @@ from uuid import UUID
 import uuid
 import logging
 from datetime import datetime
-from app.domain.repo import MessageRepository
+from app.domain.repo import MessageRepository, message_repo_factory
 from app.core.messaging.factory import broker
 from app.core.casssandra import get_session
 logger = logging.getLogger(__name__)
@@ -107,9 +107,7 @@ class MessageService:
 
         return {"status": "status updated", "status_code": status}
 
-async def get_message_service():
-    async with get_session() as session:
-        repo = MessageRepository(session)
-        message_service = MessageService(repo, broker=broker)
-    
-    return message_service
+
+async def message_service_factory() -> MessageService:
+    repo = await message_repo_factory()
+    return MessageService(repo=repo, broker=broker)

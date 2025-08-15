@@ -1,32 +1,21 @@
-from cassandra.cqlengine.models import Model
-from cassandra.cqlengine import columns
-import uuid
-from datetime import datetime
 
+from dataclasses import dataclass
+from typing import Optional
+from uuid import UUID
+from protos import message_pb2
 
-class MessageStatus:
-    DELIVERED = 0
-    SEEN = 1
+@dataclass
+class Message:
+    message_id: UUID
+    room_id: UUID
+    author_id: UUID
+    content: str
+    status: Optional[str] = None
 
-
-class Message(Model):
-    __keyspace__ = "chat"
-    room_id = columns.Text(partition_key=True)
-    created_at = columns.DateTime(primary_key=True)
-    updated_at = columns.DateTime(primary_key=True)
-    message_id = columns.UUID(default=uuid.uuid4)
-    sender_id = columns.Text()
-    content = columns.Text()
-    media_ids = columns.List(columns.UUID)
-    reply_to = columns.UUID(required=False)
-    quote = columns.Text(required=False)
-
-
-class MessageUserStatus(Model):
-    __keyspace__ = "chat"
-
-    message_id = columns.UUID(primary_key=True, partition_key=True)
-    user_id = columns.Text(primary_key=True)
-    status = columns.Integer()
-    delivered_at = columns.DateTime()
-    seen_at = columns.DateTime()
+    def to_proto(self) -> message_pb2.MessageResponse:
+        return message_pb2.MessageResponse(
+            message_id=str(self.message_id),
+            room_id=str(self.room_id),
+            author_id=str(self.author_id),
+            content=self.content,
+        )

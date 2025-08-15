@@ -2,10 +2,9 @@ import asyncio
 from contextlib import asynccontextmanager
 from cassandra.cluster import Cluster
 from cassandra.policies import DCAwareRoundRobinPolicy
-from app.core.config import settings
 
 cluster = Cluster(
-    contact_points=[settings.CASSANDRA_URL],
+    contact_points=["127.0.0.1"],
     load_balancing_policy=DCAwareRoundRobinPolicy(local_dc="datacenter1"),
     protocol_version=5,
 )
