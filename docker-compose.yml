@@ -1,3 +1,4 @@
+name: chat-server
 services:
   chat-service:
     build:
@@ -8,10 +9,17 @@ services:
     env_file:
       - services/chat-service/.env
     networks:
-      - chat-network
+      chat-network:
+        aliases:
+          - chat.local
     depends_on:
       cassandra:
         condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/chat-service
+          target: /app
 
   message-service:
     build:
@@ -22,17 +30,26 @@ services:
     env_file:
       - services/message-service/.env
     networks:
-      - chat-network
+      chat-network:
+        aliases:
+          - message.local
     depends_on:
       cassandra:
         condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/message-service
+          target: /app
 
   nats:
     image: nats:2.11-alpine
     ports:
       - "4222:4222"
     networks:
-      - chat-network
+      chat-network:
+        aliases:
+          - nats.local
 
   cassandra:
     image: cassandra:5.0.5
@@ -49,7 +66,10 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - chat-network
+      chat-network:
+        aliases:
+          - cassandra.local
+        
 
 volumes:
   cassandra_data:

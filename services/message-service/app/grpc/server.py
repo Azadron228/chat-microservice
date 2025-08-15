@@ -8,8 +8,8 @@ import app.core.logging
 import app.core.messaging.handlers
 from app.core.messaging.handlers.message import handle_new_message
 from app.core.messaging.factory import broker
-from app.core.grpc.message_servicer import MessageServicer
 from protos.message_pb2_grpc import add_MessageServiceServicer_to_server
+from app.grpc.message_servicer import MessageServicer
 
 logger = logging.getLogger(__name__)
 
