@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import message_pb2 as message__pb2
+import app.core.grpc.gen.message_pb2 as message__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
 GRPC_VERSION = grpc.__version__
@@ -26,7 +26,8 @@ if _version_not_supported:
 
 
 class MessageServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """MessageService defines the gRPC service for handling messages
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -34,54 +35,31 @@ class MessageServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.SendMessage = channel.unary_unary(
-                '/message.MessageService/SendMessage',
-                request_serializer=message__pb2.SendMessageRequest.SerializeToString,
-                response_deserializer=message__pb2.SendMessageResponse.FromString,
+        self.ListMessages = channel.unary_unary(
+                '/message.MessageService/ListMessages',
+                request_serializer=message__pb2.ListMessagesRequest.SerializeToString,
+                response_deserializer=message__pb2.ListMessagesResponse.FromString,
                 _registered_method=True)
-        self.GetMessages = channel.unary_unary(
-                '/message.MessageService/GetMessages',
-                request_serializer=message__pb2.GetMessagesRequest.SerializeToString,
-                response_deserializer=message__pb2.GetMessagesResponse.FromString,
-                _registered_method=True)
-        self.SetMessageStatus = channel.unary_unary(
-                '/message.MessageService/SetMessageStatus',
-                request_serializer=message__pb2.SetMessageStatusRequest.SerializeToString,
-                response_deserializer=message__pb2.SetMessageStatusResponse.FromString,
-                _registered_method=True)
-        self.GetMessageStatuses = channel.unary_unary(
-                '/message.MessageService/GetMessageStatuses',
-                request_serializer=message__pb2.GetMessageStatusesRequest.SerializeToString,
-                response_deserializer=message__pb2.GetMessageStatusesResponse.FromString,
+        self.GetMessageStatus = channel.unary_unary(
+                '/message.MessageService/GetMessageStatus',
+                request_serializer=message__pb2.GetMessageStatusRequest.SerializeToString,
+                response_deserializer=message__pb2.MessagesResponse.FromString,
                 _registered_method=True)
 
 
 class MessageServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """MessageService defines the gRPC service for handling messages
+    """
 
-    def SendMessage(self, request, context):
-        """Send new message
+    def ListMessages(self, request, context):
+        """ListMessages retrieves a list of messages for a given room
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetMessages(self, request, context):
-        """Get messages for a room
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def SetMessageStatus(self, request, context):
-        """Set status for a message-user
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetMessageStatuses(self, request, context):
-        """Get all statuses for a message
+    def GetMessageStatus(self, request, context):
+        """GetMessageStatus retrieves the status of a specific message
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -90,25 +68,15 @@ class MessageServiceServicer(object):
 
 def add_MessageServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'SendMessage': grpc.unary_unary_rpc_method_handler(
-                    servicer.SendMessage,
-                    request_deserializer=message__pb2.SendMessageRequest.FromString,
-                    response_serializer=message__pb2.SendMessageResponse.SerializeToString,
+            'ListMessages': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMessages,
+                    request_deserializer=message__pb2.ListMessagesRequest.FromString,
+                    response_serializer=message__pb2.ListMessagesResponse.SerializeToString,
             ),
-            'GetMessages': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetMessages,
-                    request_deserializer=message__pb2.GetMessagesRequest.FromString,
-                    response_serializer=message__pb2.GetMessagesResponse.SerializeToString,
-            ),
-            'SetMessageStatus': grpc.unary_unary_rpc_method_handler(
-                    servicer.SetMessageStatus,
-                    request_deserializer=message__pb2.SetMessageStatusRequest.FromString,
-                    response_serializer=message__pb2.SetMessageStatusResponse.SerializeToString,
-            ),
-            'GetMessageStatuses': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetMessageStatuses,
-                    request_deserializer=message__pb2.GetMessageStatusesRequest.FromString,
-                    response_serializer=message__pb2.GetMessageStatusesResponse.SerializeToString,
+            'GetMessageStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMessageStatus,
+                    request_deserializer=message__pb2.GetMessageStatusRequest.FromString,
+                    response_serializer=message__pb2.MessagesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -119,10 +87,11 @@ def add_MessageServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class MessageService(object):
-    """Missing associated documentation comment in .proto file."""
+    """MessageService defines the gRPC service for handling messages
+    """
 
     @staticmethod
-    def SendMessage(request,
+    def ListMessages(request,
             target,
             options=(),
             channel_credentials=None,
@@ -135,9 +104,9 @@ class MessageService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/message.MessageService/SendMessage',
-            message__pb2.SendMessageRequest.SerializeToString,
-            message__pb2.SendMessageResponse.FromString,
+            '/message.MessageService/ListMessages',
+            message__pb2.ListMessagesRequest.SerializeToString,
+            message__pb2.ListMessagesResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -149,7 +118,7 @@ class MessageService(object):
             _registered_method=True)
 
     @staticmethod
-    def GetMessages(request,
+    def GetMessageStatus(request,
             target,
             options=(),
             channel_credentials=None,
@@ -162,63 +131,9 @@ class MessageService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/message.MessageService/GetMessages',
-            message__pb2.GetMessagesRequest.SerializeToString,
-            message__pb2.GetMessagesResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def SetMessageStatus(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/message.MessageService/SetMessageStatus',
-            message__pb2.SetMessageStatusRequest.SerializeToString,
-            message__pb2.SetMessageStatusResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def GetMessageStatuses(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/message.MessageService/GetMessageStatuses',
-            message__pb2.GetMessageStatusesRequest.SerializeToString,
-            message__pb2.GetMessageStatusesResponse.FromString,
+            '/message.MessageService/GetMessageStatus',
+            message__pb2.GetMessageStatusRequest.SerializeToString,
+            message__pb2.MessagesResponse.FromString,
             options,
             channel_credentials,
             insecure,

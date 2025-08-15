@@ -8,7 +8,7 @@ class MessageService(message_pb2_grpc.MessageServiceServicer):
         message_id = uuid.uuid4()
         msg = Message.create(
             room_id=request.room_id,
-            sender_id=request.sender_id,
+            author_id=request.author_id,
             message_id=message_id,
             content=request.content,
             media_ids=request.media_ids,

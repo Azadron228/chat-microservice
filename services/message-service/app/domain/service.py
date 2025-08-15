@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 from app.domain.repo import MessageRepository
 from app.core.messaging.factory import broker
-
+from app.core.casssandra import get_session
 logger = logging.getLogger(__name__)
 class MessageService:
     def __init__(self, repo: MessageRepository, broker):
@@ -21,7 +21,9 @@ class MessageService:
         media_ids: Optional[List[UUID]] = None
     ) -> dict:
         message_id = uuid.uuid1()  # UUID1 for chronological order
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now()
+        room_id = UUID(room_id)
+        author_id = UUID(author_id)
 
         message = {
             "message_id": str(message_id),
@@ -31,6 +33,7 @@ class MessageService:
             "media_ids": [str(mid) for mid in (media_ids or [])],
             "created_at": timestamp.isoformat()
         }
+        logger.info(f"Type of room_id: {type(room_id)}")
 
         await self.repo.save_message(
             room_id=room_id,
@@ -61,7 +64,7 @@ class MessageService:
                 "message_id": str(row.message_id),
                 "author_id": str(row.author_id),
                 "content": row.content,
-                "media_ids": [str(mid) for mid in row.media_ids],
+                "media_ids": [str(mid) for mid in (row.media_ids or [])],
                 "created_at": row.created_at.isoformat() if row.created_at else None,
                 "updated_at": row.updated_at.isoformat() if row.updated_at else None
             })
@@ -90,7 +93,7 @@ class MessageService:
         user_id: UUID,
         status: int
     ):
-        now = datetime.utcnow()
+        now = datetime.now()
         delivered_at = now if status == 0 else None
         seen_at = now if status == 1 else None
 
@@ -103,3 +106,10 @@ class MessageService:
         )
 
         return {"status": "status updated", "status_code": status}
+
+async def get_message_service():
+    async with get_session() as session:
+        repo = MessageRepository(session)
+        message_service = MessageService(repo, broker=broker)
+    
+    return message_service

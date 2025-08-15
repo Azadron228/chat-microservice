@@ -22,38 +22,25 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\x12\x07message\x1a\x1fgoogle/protobuf/timestamp.proto\"}\n\x12SendMessageRequest\x12\x0f\n\x07room_id\x18\x01 \x01(\t\x12\x11\n\tsender_id\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x03 \x01(\t\x12\x11\n\tmedia_ids\x18\x04 \x03(\t\x12\x10\n\x08reply_to\x18\x05 \x01(\t\x12\r\n\x05quote\x18\x06 \x01(\t\"X\n\x13SendMessageResponse\x12\x12\n\nmessage_id\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"N\n\x12GetMessagesRequest\x12\x0f\n\x07room_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x18\n\x10\x61\x66ter_message_id\x18\x03 \x01(\t\"=\n\x13GetMessagesResponse\x12&\n\x08messages\x18\x01 \x03(\x0b\x32\x14.message.ChatMessage\"\xb9\x01\n\x0b\x43hatMessage\x12\x12\n\nmessage_id\x18\x01 \x01(\t\x12\x0f\n\x07room_id\x18\x02 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tsender_id\x18\x04 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x05 \x01(\t\x12\x11\n\tmedia_ids\x18\x06 \x03(\t\x12\x10\n\x08reply_to\x18\x07 \x01(\t\x12\r\n\x05quote\x18\x08 \x01(\t\"\xc5\x01\n\x17SetMessageStatusRequest\x12\x12\n\nmessage_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12&\n\x06status\x18\x03 \x01(\x0e\x32\x16.message.MessageStatus\x12\x30\n\x0c\x64\x65livered_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07seen_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"+\n\x18SetMessageStatusResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"/\n\x19GetMessageStatusesRequest\x12\x12\n\nmessage_id\x18\x01 \x01(\t\"C\n\x1aGetMessageStatusesResponse\x12%\n\x08statuses\x18\x01 \x03(\x0b\x32\x13.message.UserStatus\"\xa4\x01\n\nUserStatus\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12&\n\x06status\x18\x02 \x01(\x0e\x32\x16.message.MessageStatus\x12\x30\n\x0c\x64\x65livered_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07seen_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp*2\n\rMessageStatus\x12\x08\n\x04SENT\x10\x00\x12\r\n\tDELIVERED\x10\x01\x12\x08\n\x04SEEN\x10\x02\x32\xdc\x02\n\x0eMessageService\x12H\n\x0bSendMessage\x12\x1b.message.SendMessageRequest\x1a\x1c.message.SendMessageResponse\x12H\n\x0bGetMessages\x12\x1b.message.GetMessagesRequest\x1a\x1c.message.GetMessagesResponse\x12W\n\x10SetMessageStatus\x12 .message.SetMessageStatusRequest\x1a!.message.SetMessageStatusResponse\x12]\n\x12GetMessageStatuses\x12\".message.GetMessageStatusesRequest\x1a#.message.GetMessageStatusesResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\x12\x07message\"5\n\x13ListMessagesRequest\x12\x0f\n\x07room_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\"B\n\x14ListMessagesResponse\x12*\n\x08messages\x18\x01 \x03(\x0b\x32\x18.message.MessageResponse\"-\n\x17GetMessageStatusRequest\x12\x12\n\nmessage_id\x18\x01 \x01(\t\">\n\x10MessagesResponse\x12*\n\x08messages\x18\x01 \x03(\x0b\x32\x18.message.MessageResponse\"\x92\x01\n\x0fMessageResponse\x12\x12\n\nmessage_id\x18\x01 \x01(\t\x12\x0f\n\x07room_id\x18\x02 \x01(\t\x12\x11\n\tauthor_id\x18\x03 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\t\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x12\n\ncreated_at\x18\x06 \x01(\x03\x12\x12\n\nupdated_at\x18\x07 \x01(\x03\x32\xae\x01\n\x0eMessageService\x12K\n\x0cListMessages\x12\x1c.message.ListMessagesRequest\x1a\x1d.message.ListMessagesResponse\x12O\n\x10GetMessageStatus\x12 .message.GetMessageStatusRequest\x1a\x19.message.MessagesResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'message_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_MESSAGESTATUS']._serialized_start=1137
-  _globals['_MESSAGESTATUS']._serialized_end=1187
-  _globals['_SENDMESSAGEREQUEST']._serialized_start=59
-  _globals['_SENDMESSAGEREQUEST']._serialized_end=184
-  _globals['_SENDMESSAGERESPONSE']._serialized_start=186
-  _globals['_SENDMESSAGERESPONSE']._serialized_end=274
-  _globals['_GETMESSAGESREQUEST']._serialized_start=276
-  _globals['_GETMESSAGESREQUEST']._serialized_end=354
-  _globals['_GETMESSAGESRESPONSE']._serialized_start=356
-  _globals['_GETMESSAGESRESPONSE']._serialized_end=417
-  _globals['_CHATMESSAGE']._serialized_start=420
-  _globals['_CHATMESSAGE']._serialized_end=605
-  _globals['_SETMESSAGESTATUSREQUEST']._serialized_start=608
-  _globals['_SETMESSAGESTATUSREQUEST']._serialized_end=805
-  _globals['_SETMESSAGESTATUSRESPONSE']._serialized_start=807
-  _globals['_SETMESSAGESTATUSRESPONSE']._serialized_end=850
-  _globals['_GETMESSAGESTATUSESREQUEST']._serialized_start=852
-  _globals['_GETMESSAGESTATUSESREQUEST']._serialized_end=899
-  _globals['_GETMESSAGESTATUSESRESPONSE']._serialized_start=901
-  _globals['_GETMESSAGESTATUSESRESPONSE']._serialized_end=968
-  _globals['_USERSTATUS']._serialized_start=971
-  _globals['_USERSTATUS']._serialized_end=1135
-  _globals['_MESSAGESERVICE']._serialized_start=1190
-  _globals['_MESSAGESERVICE']._serialized_end=1538
+  _globals['_LISTMESSAGESREQUEST']._serialized_start=26
+  _globals['_LISTMESSAGESREQUEST']._serialized_end=79
+  _globals['_LISTMESSAGESRESPONSE']._serialized_start=81
+  _globals['_LISTMESSAGESRESPONSE']._serialized_end=147
+  _globals['_GETMESSAGESTATUSREQUEST']._serialized_start=149
+  _globals['_GETMESSAGESTATUSREQUEST']._serialized_end=194
+  _globals['_MESSAGESRESPONSE']._serialized_start=196
+  _globals['_MESSAGESRESPONSE']._serialized_end=258
+  _globals['_MESSAGERESPONSE']._serialized_start=261
+  _globals['_MESSAGERESPONSE']._serialized_end=407
+  _globals['_MESSAGESERVICE']._serialized_start=410
+  _globals['_MESSAGESERVICE']._serialized_end=584
 # @@protoc_insertion_point(module_scope)
