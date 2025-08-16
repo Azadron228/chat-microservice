@@ -5,7 +5,7 @@ services:
       context: services/chat-service/
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "5000:8000"
     env_file:
       - services/chat-service/.env
     networks:
@@ -13,13 +13,16 @@ services:
         aliases:
           - chat.local
     depends_on:
-      cassandra:
+      scylla:
         condition: service_healthy
     develop:
       watch:
         - action: sync+restart
           path: services/chat-service
           target: /app
+        - action: rebuild
+          path: services/chat-service/requirements.txt
+          target: /app/requirements.txt
 
   message-service:
     build:
@@ -34,7 +37,7 @@ services:
         aliases:
           - message.local
     depends_on:
-      cassandra:
+      scylla:
         condition: service_healthy
     develop:
       watch:
@@ -51,15 +54,14 @@ services:
         aliases:
           - nats.local
 
-  cassandra:
-    image: cassandra:5.0.5
-    container_name: cassandra
+  scylla:
+    image: scylladb/scylla:2025.2
     ports:
       - "9042:9042"
     environment:
-      - CASSANDRA_CLUSTER_NAME=ChatCluster
+      - SCYLLA_SEEDS=scylla
     volumes:
-      - cassandra_data:/var/lib/cassandra
+      - scylla_data:/var/lib/scylla
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
       interval: 30s
@@ -68,11 +70,50 @@ services:
     networks:
       chat-network:
         aliases:
-          - cassandra.local
-        
+          - scylla.local
+    
+  keycloack:
+    image: keycloak/keycloak:26.3
+    ports:
+      - 8080:8080
+    command: start-dev
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      chat-network:
+        aliases:
+          - keycloack.local
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      chat-network:
+        aliases:
+          - postgres.local
 
 volumes:
-  cassandra_data:
+  scylla_data:
+  postgres_data:
 
 networks:
   chat-network:

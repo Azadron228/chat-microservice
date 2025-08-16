@@ -11,8 +11,8 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 @jsonrpc("hello")
-async def hello(user):
-    return user
+async def hello(user_id: str):
+    return f"Hello, your user_id: {user_id}"
 
 @jsonrpc("chat.join_room")
 async def join_room(websocket):
@@ -24,12 +24,12 @@ async def join_room(websocket):
     }
 
 @jsonrpc("chat.send_message")
-async def handle_send_message(user:dict, room_id:str, content: str):
+async def handle_send_message(user_id: str, room_id:str, content: str):
 
     await broker.publish("chat.messages.message.to_save", {
         "content": content,
         "room_id": room_id,
-        "author_id": str(uuid.uuid1())
+        "author_id": user_id
     })
 
 

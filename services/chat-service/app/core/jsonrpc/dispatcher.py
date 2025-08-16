@@ -33,7 +33,7 @@ def jsonrpc(name: Optional[str] = None):
 
 
 async def handle_jsonrpc_request(
-    req_data: dict, websocket: WebSocket, user: dict
+    req_data: dict, websocket: WebSocket, user_id: str
 ) -> Optional[JsonRpcResponse]:
     try:
         request = JsonRpcRequest(**req_data)
@@ -71,7 +71,7 @@ async def handle_jsonrpc_request(
         sig = signature(func)
 
         # Inject context parameters if the function accepts them (override if provided)
-        extra_kwargs = {"websocket": websocket, "user": user}
+        extra_kwargs = {"websocket": websocket, "user_id": user_id}
         for extra_name, extra_value in extra_kwargs.items():
             if extra_name in sig.parameters:
                 kwargs[extra_name] = extra_value

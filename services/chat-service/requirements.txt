@@ -6,3 +6,6 @@ pydantic-settings
 websockets
 grpcio
 grpcio-tools
+pyjwt
+aiohttp
+cryptography
