@@ -124,15 +124,21 @@ async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint with Keycloak authentication."""
     await websocket.accept()
     
+   # 1. Check query param
     token = websocket.query_params.get("token")
+
+    # 2. If not found, check Authorization header
     if not token:
-        logger.warning("No token provided in WebSocket connection")
+        auth_header = websocket.headers.get("authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+
+    if not token:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
     
-    claims = await verify_token(token)
+    claims = verify_token(token)
     if not claims:
-        logger.warning("Invalid token provided")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
     
