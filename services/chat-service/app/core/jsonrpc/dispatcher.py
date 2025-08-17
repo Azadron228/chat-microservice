@@ -1,10 +1,12 @@
 import asyncio
+import logging
 from typing import Any, Optional, Union
 from fastapi import FastAPI, WebSocket, APIRouter
 from pydantic import BaseModel, ValidationError
 from inspect import signature
 from app.core.jsonrpc.schemas import JsonRpcRequest, JsonRpcResponse, JsonRpcError
 
+logger = logging.getLogger(__name__)
 # Registry for JSON-RPC methods
 jsonrpc_methods = {}
 
@@ -50,6 +52,7 @@ async def handle_jsonrpc_request(
             ),
         )
 
+    logger.info(f"availble methods: {jsonrpc_methods}")
     if request.method not in jsonrpc_methods:
         return JsonRpcResponse(
             id=request.id, error=JsonRpcError(code=-32601, message="Method not found")

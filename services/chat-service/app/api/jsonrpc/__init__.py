@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import aiohttp
 import logging
 from app.core.jsonrpc.dispatcher import handle_jsonrpc_request
+import app.api.jsonrpc.handlers.chat
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -85,7 +86,7 @@ async def verify_token(token: str) -> Optional[TokenPayload]:
                 "verify_signature": True,
                 "verify_aud": False,
                 "verify_iat": True,
-                "verify_exp": True,
+                "verify_exp": False,
                 "verify_iss": True,
             }
         )
@@ -137,7 +138,9 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
     
-    claims = verify_token(token)
+    websocket.scope["token"] = token
+    
+    claims = await verify_token(token)
     if not claims:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
@@ -155,7 +158,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # Batch request
             responses = []
             for req_data in data:
-                resp = await handle_jsonrpc_request(req_data, websocket, user_id = claims["sub"])
+                resp = await handle_jsonrpc_request(req_data, websocket, user_id = claims.sub)
                 if (
                     resp and resp.id is not None
                 ):  # Only include responses for requests with id (not notifications)
@@ -166,6 +169,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
         else:
             # Single request
-            resp = await handle_jsonrpc_request(data, websocket, user_id=claims["sub"])
+            resp = await handle_jsonrpc_request(data, websocket, user_id=claims.sub)
             if resp and resp.id is not None:  # Not a notification
                 await websocket.send_json(resp.model_dump(exclude_unset=True))

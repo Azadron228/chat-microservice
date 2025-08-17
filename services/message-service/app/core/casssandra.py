@@ -4,9 +4,7 @@ from cassandra.cluster import Cluster
 from cassandra.policies import DCAwareRoundRobinPolicy
 
 cluster = Cluster(
-    contact_points=["127.0.0.1"],
-    load_balancing_policy=DCAwareRoundRobinPolicy(local_dc="datacenter1"),
-    protocol_version=5,
+    contact_points=["scylla.local"]
 )
 
 

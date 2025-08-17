@@ -44,6 +44,9 @@ services:
         - action: sync+restart
           path: services/message-service
           target: /app
+        - action: rebuild
+          path: services/message-service/requirements.txt
+          target: /app/requirements.txt
 
   nats:
     image: nats:2.11-alpine

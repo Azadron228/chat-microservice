@@ -30,10 +30,22 @@ class MessageRepository:
             WHERE room_id = ? AND message_id = ?
         """)
 
-        # Get recent messages from a room
-        self.get_recent_messages_ps: PreparedStatement = session.prepare("""
-            SELECT * FROM chat.messages
+       # Before (older messages)
+        self.get_messages_before_ps: PreparedStatement = session.prepare("""
+            SELECT *
+            FROM chat.messages
             WHERE room_id = ?
+            AND message_id < ?
+            ORDER BY message_id DESC
+            LIMIT ?
+        """)
+
+        # After (newer messages)
+        self.get_messages_after_ps: PreparedStatement = session.prepare("""
+            SELECT *
+            FROM chat.messages
+            WHERE room_id = ?
+            AND message_id > ?
             ORDER BY message_id DESC
             LIMIT ?
         """)
@@ -77,15 +89,30 @@ class MessageRepository:
     async def list_messages(
         self,
         room_id: UUID,
-        limit: int = 50
+        before: UUID | None = None,
+        after: UUID | None = None,
+        limit: int = 10,
     ):
-        future = self.session.execute_async(
-            self.get_recent_messages_ps,
-            (room_id, limit)
-        )
+        if before is None and after is None:
+            raise ValueError("Either 'before' or 'after' must be provided")
+
+        if before is not None and after is not None:
+            raise ValueError("Only one of 'before' or 'after' should be provided")
+
+        if before is not None:
+            future = self.session.execute_async(
+                self.get_messages_before_ps,
+                (room_id, before, limit)
+            )
+        else:
+            future = self.session.execute_async(
+                self.get_messages_after_ps,
+                (room_id, after, limit)
+            )
+
         result = await await_response_future(future)
         return list(result)
-
+    
 
     async def update_message(
         self,

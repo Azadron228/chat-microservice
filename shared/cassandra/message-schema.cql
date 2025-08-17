@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS chat.messages (
 CREATE TABLE IF NOT EXISTS chat.message_user_status (
     message_id UUID,
     user_id UUID,
-    status INT, -- 0: delivered, 1: seen
     delivered_at TIMESTAMP,
     seen_at TIMESTAMP,
     PRIMARY KEY ((message_id), user_id)

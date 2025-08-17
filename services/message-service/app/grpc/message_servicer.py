@@ -8,8 +8,14 @@ class MessageServicer(message_pb2_grpc.MessageServiceServicer):
     async def ListMessages(self, request, context):
         try:
             service = await message_service_factory()
+            before = UUID(request.before) if request.before else None
+            after = UUID(request.after) if request.after else None
+
             messages = await service.list_messages(
-                room_id=UUID(request.room_id), limit=10
+                room_id=UUID(request.room_id),
+                before=before,
+                after=after,
+                limit=request.limit or 10
             )
             return message_pb2.ListMessagesResponse(
                 messages=[msg.to_proto() for msg in messages]

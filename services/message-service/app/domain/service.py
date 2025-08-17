@@ -52,9 +52,11 @@ class MessageService:
     async def list_messages(
         self,
         room_id: UUID,
-        limit: int = 50
+        before: UUID,
+        after: UUID,
+        limit: int = 10
     ):
-        rows = await self.repo.list_messages(room_id, limit)
+        rows = await self.repo.list_messages(room_id,before=before, after=after, limit=limit)
 
         # Convert rows to JSON-serializable dicts
         messages = []

@@ -1,4 +1,4 @@
-cassandra-driver
+scylla-driver
 nats-py
 grpcio
 grpcio-tools

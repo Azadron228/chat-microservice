@@ -16,7 +16,7 @@ async def hello(user_id: str):
 
 @jsonrpc("chat.join_room")
 async def join_room(websocket):
-    room_id = str(uuid.uuid1)
+    room_id = str(uuid.uuid1())
     add_client_to_room(room_id, websocket)
 
     return {

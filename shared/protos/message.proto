@@ -8,13 +8,15 @@ service MessageService {
   rpc ListMessages (ListMessagesRequest) returns (ListMessagesResponse);
 
   // GetMessageStatus retrieves the status of a specific message
-  rpc GetMessageStatus (GetMessageStatusRequest) returns (MessagesResponse);
+  rpc GetMessageStatus (GetMessageStatusRequest) returns (ListMessageStatusesResponse);
 }
 
 // Request message for ListMessages
 message ListMessagesRequest {
   string room_id = 1; // UUID of the room
-  int32 limit = 2;   // Maximum number of messages to return
+  string before = 2; // UUID of the room
+  string after = 3; // UUID of the room
+  int32 limit = 4;   // Maximum number of messages to return
 }
 
 // Response message for ListMessages
@@ -28,8 +30,8 @@ message GetMessageStatusRequest {
 }
 
 // Response message for GetMessageStatus
-message MessagesResponse {
-  repeated MessageResponse messages = 1; // Single message status
+message ListMessageStatusesResponse {
+  repeated MessageStatusesResponse messages = 1; // Single message status
 }
 
 // Message response structure
@@ -38,7 +40,14 @@ message MessageResponse {
   string room_id = 2;    // UUID of the room
   string author_id = 3;  // UUID of the room
   string content = 4;    // Content of the message
-  string status = 5;     // Status of the message
-  int64 created_at = 6;   // Timestamp of the message
-  int64 updated_at = 7;   // Timestamp of the message
+  int64 created_at = 5;   // Timestamp of the message
+  int64 updated_at = 6;   // Timestamp of the message
+}
+
+// Message status response structure
+message MessageStatusResponse {
+  string message_id = 1;  // UUID of the message
+  string user_id = 2,
+  string delivered_at = 3,
+  string seen_at = 4,
 }
