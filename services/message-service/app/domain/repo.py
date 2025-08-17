@@ -1,3 +1,4 @@
+import logging
 from cassandra.query import PreparedStatement
 from uuid import UUID
 from datetime import datetime
@@ -10,6 +11,7 @@ from cassandra.cluster import Session, PreparedStatement
 from typing import List, Optional
 from uuid import UUID
 
+logger = logging.getLogger(__name__)
 
 class MessageRepository:
     def __init__(self, session: Session):
@@ -46,15 +48,15 @@ class MessageRepository:
             FROM chat.messages
             WHERE room_id = ?
             AND message_id > ?
-            ORDER BY message_id DESC
+            ORDER BY message_id ASC
             LIMIT ?
         """)
 
         # Insert or update user status
         self.update_status_ps: PreparedStatement = session.prepare("""
             INSERT INTO chat.message_user_status (
-                message_id, user_id, status, delivered_at, seen_at
-            ) VALUES (?, ?, ?, ?, ?)
+                message_id, user_id, delivered_at, seen_at
+            ) VALUES (?, ?, ?, ?)
         """)
 
         # Get user status
@@ -84,6 +86,7 @@ class MessageRepository:
                 timestamp
             )
         )
+        logger.info(f"Save message with id: {str(message_id)}")
         await await_response_future(future)
 
     async def list_messages(

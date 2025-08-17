@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS chat.messages (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     PRIMARY KEY ((room_id), message_id)
-);
+) WITH CLUSTERING ORDER BY (message_id DESC);
 
 
 CREATE TABLE IF NOT EXISTS chat.message_user_status (

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from app.core.messaging.factory import broker
 from app.api.jsonrpc import router
 import app.core.logging
-from app.core.messaging.handlers.chat import to_broadcast_handler
+from app.core.messaging.handlers import subscribe_handlers
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     try:
         await broker.connect()
-        await broker.subscribe("chat.messages.to_broadcast", to_broadcast_handler)
+        await subscribe_handlers()
         logger.info("Connected to broker")
         yield
     except KeyboardInterrupt:

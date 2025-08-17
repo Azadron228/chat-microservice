@@ -2,9 +2,10 @@ import asyncio
 from contextlib import asynccontextmanager
 from cassandra.cluster import Cluster
 from cassandra.policies import DCAwareRoundRobinPolicy
+from app.core.config import settings
 
 cluster = Cluster(
-    contact_points=["scylla.local"]
+    contact_points=[settings.SCYLLA_URL]
 )
 
 
