@@ -8,6 +8,7 @@ services:
       - "5000:8000"
     env_file:
       - services/chat-service/.env
+      - .env
     networks:
       chat-network:
         aliases:
@@ -86,6 +87,7 @@ services:
       DB_DATABASE: keycloak
       DB_USER: keycloak
       DB_PASSWORD: password
+      KC_HOSTNAME: keycloack.local
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     depends_on:

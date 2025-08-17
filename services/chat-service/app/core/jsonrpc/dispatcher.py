@@ -34,8 +34,11 @@ class JsonRpcRouter:
 
         return decorator
 
+    def include_router(self,router):
+        for name, func in router.methods.items():
+            self.methods[name] = func
 
-    async def handle_jsonrpc_request(
+    async def dispatch(
         self, req_data: dict, websocket: WebSocket, user_id: str
     ) -> Optional[JsonRpcResponse]:
         try:

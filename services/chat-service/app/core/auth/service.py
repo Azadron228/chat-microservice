@@ -4,28 +4,23 @@ import jwt
 from jwt import PyJWKClient
 from typing import Optional
 from app.core.auth.schemas import TokenPayload
+from app.core.config import KeycloackSettings
 
 logger = logging.getLogger(__name__)
 
-KEYCLOAK_DOMAIN = "http://keycloack.local:8080"
-REALM = "chat"
-CLIENT_ID = "chat"
-JWKS_URL = f"{KEYCLOAK_DOMAIN}/realms/{REALM}/protocol/openid-connect/certs"
-TOKEN_URL = f"{KEYCLOAK_DOMAIN}/realms/{REALM}/protocol/openid-connect/token"
-
-jwks_client = PyJWKClient(JWKS_URL)
+jwks_client = PyJWKClient(KeycloackSettings.JWKS_URL)
 
 async def verify_token(token: str) -> Optional[TokenPayload]:
     """Verify JWT token and return validated payload."""
     try:
         signing_key = jwks_client.get_signing_key_from_jwt(token)
-        issuer=f"{KEYCLOAK_DOMAIN}/realms/{REALM}",
+        issuer=f"{KeycloackSettings.KEYCLOAK_DOMAIN}/realms/{KeycloackSettings.REALM}",
         
         payload = jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
-            audience=CLIENT_ID,
+            audience=KeycloackSettings.CLIENT_ID,
             issuer=issuer,
             options={
                 "verify_aud": False,
