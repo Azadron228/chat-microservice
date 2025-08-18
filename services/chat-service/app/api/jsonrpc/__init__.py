@@ -2,12 +2,13 @@ from fastapi import WebSocket, APIRouter, status
 from app.core.auth.service import verify_token
 import logging
 from app.core.jsonrpc.dispatcher import JsonRpcRouter
+from app.api.jsonrpc.handlers.chat import jsonrpc as chat_router
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 jsonrpc_router = JsonRpcRouter()
-jsonrpc_router.include_router()
+jsonrpc_router.include_router(chat_router)
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

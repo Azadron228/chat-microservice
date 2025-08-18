@@ -2,7 +2,6 @@ import uuid
 import grpc
 from app.core.jsonrpc.dispatcher import JsonRpcRouter
 from app.core.messaging.factory import broker
-from app.domain.chat.service import add_client_to_room
 from protos import message_pb2 as message_pb2
 from protos import message_pb2_grpc as message_pb2_grpc
 import logging
@@ -21,7 +20,7 @@ async def hello(user_id: str):
 @jsonrpc.method("room.join_dm")
 async def join_dm(websocket, user_id: str, target_user_id: str):
     room_id = room_service.get_or_create_dm_room(user_id, target_user_id)
-    add_client_to_room(room_id, websocket)
+    connection_manager.connect(user_id, websocket)
     return f"Joined room_id: {room_id}"
 
 @jsonrpc.method("room.get_members")
@@ -33,14 +32,14 @@ async def join_dm(room_id):
         "count": len(members),
     }
 
-@jsonrpc.method("chat.join_room")
-async def join_room(websocket):
-    room_id = str(uuid.uuid1())
-    add_client_to_room(room_id, websocket)
+# @jsonrpc.method("chat.join_room")
+# async def join_room(websocket):
+#     room_id = str(uuid.uuid1())
+#     connection_manager.connect(user_id, websocket)
 
-    return {
-        "room_id": room_id
-    }
+#     return {
+#         "room_id": room_id
+#     }
 
 @jsonrpc.method("chat.send_message")
 async def handle_send_message(user_id: str, room_id:str, content: str):

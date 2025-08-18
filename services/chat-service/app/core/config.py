@@ -1,4 +1,7 @@
 from enum import Enum
+import json
+from typing import List
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 class Environment(str, Enum):
@@ -9,28 +12,34 @@ class Environment(str, Enum):
 class BaseAppSettings(BaseSettings):
     ENVIRONMENT: Environment = Environment.DEV
 
-class KeycloackSettings(BaseAppSettings):
-    DOMAIN: str
-    REALM: str
-    CLIENT_ID: str
+class KeycloakSettings(BaseAppSettings):
+    KEYCLOAK_DOMAIN: str
+    KEYCLOAK_REALM: str
+    KEYCLOAK_CLIENT_ID: List[str]
 
     @property
     def jwks_url(self) -> str:
-        return f"{self.DOMAIN}/realms/{self.REALM}/protocol/openid-connect/certs"
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOACK_REALM}/protocol/openid-connect/certs"
 
     @property
     def token_url(self) -> str:
-        return f"{self.DOMAIN}/realms/{self.REALM}/protocol/openid-connect/token"
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOACK_REALM}/protocol/openid-connect/token"
 
     @property
     def issuer(self) -> str:
-        return f"{self.DOMAIN}/realms/{self.REALM}"
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOACK_REALM}"
     
-class Settings(KeycloackSettings, BaseAppSettings):
+    @field_validator("KEYCLOAK_CLIENT_ID", mode="before")
+    def parse_json_list(cls, v):
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
+    
+class Settings(KeycloakSettings, BaseAppSettings):
     NATS_URL: str
     MESSAGE_SERVICE_GRPC_URL: str
     class Config:
-        env_file = ("../../.env")
+        env_file = ["../../.env", ".env"]
         extra = "ignore"
 
 settings = Settings()
