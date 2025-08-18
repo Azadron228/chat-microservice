@@ -3,7 +3,7 @@ from app.config import settings
 from app.repo import RoomRepository
 
 db = Database(
-    url=settings.DATABASE_URL,
+    url=settings.POSTGRES_DB_URL,
 )
 
 async def get_db():
