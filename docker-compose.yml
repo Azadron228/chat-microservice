@@ -5,7 +5,7 @@ services:
       context: services/chat-service/
       dockerfile: Dockerfile
     ports:
-      - "5000:8000"
+      - "8000:8000"
     env_file:
       - services/chat-service/.env
       - .env
@@ -49,6 +49,55 @@ services:
           path: services/message-service/requirements.txt
           target: /app/requirements.txt
 
+  room-service:
+    build:
+      context: services/room-service/
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8000"
+    env_file:
+      - services/room-service/.env
+      - .env
+    networks:
+      chat-network:
+        aliases:
+          - room.local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/room-service
+          target: /app
+        - action: rebuild
+          path: services/room-service/requirements.txt
+          target: /app/requirements.txt
+
+  user-service:
+    build:
+      context: services/user-service/
+      dockerfile: Dockerfile
+    ports:
+      - "8020:8000"
+    env_file:
+      - services/user-service/.env
+    networks:
+      chat-network:
+        aliases:
+          - user.local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/user-service
+          target: /app
+        - action: rebuild
+          path: services/user-service/requirements.txt
+          target: /app/requirements.txt
+
   nats:
     image: nats:2.11-alpine
     ports:
@@ -81,29 +130,24 @@ services:
     ports:
       - 8080:8080
     command: start-dev
-    environment:
-      DB_VENDOR: POSTGRES
-      DB_ADDR: postgres
-      DB_DATABASE: keycloak
-      DB_USER: keycloak
-      DB_PASSWORD: password
-      KC_HOSTNAME: keycloack.local
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       chat-network:
         aliases:
-          - keycloack.local
+          - ${KC_HOSTNAME}
 
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: password
+      - POSTGRES_DB=${KC_DB_DATABASE}
+      - POSTGRES_USER=${KC_DB_USER}
+      - POSTGRES_PASSWORD=${KC_DB_PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

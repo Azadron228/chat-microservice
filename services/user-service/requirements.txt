@@ -1,0 +1,8 @@
+fastapi
+pydantic
+pydantic-settings
+alembic
+asyncpg
+sqlalchemy[asyncio]
+uvicorn
+pyjwt

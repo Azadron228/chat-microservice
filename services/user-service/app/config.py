@@ -1,8 +1,9 @@
-import logging
+import json
+from typing import List
 from pydantic_settings import BaseSettings
-from pydantic import model_validator
+from pydantic import model_validator, field_validator
 
-logger = logging.getLogger(__name__)
+
 class PostgresSettings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_USER: str
@@ -31,16 +32,40 @@ class PostgresSettings(BaseSettings):
     @property
     def test_postgres_db(self) -> str:
         return f"test_{self.POSTGRES_DB}"
-    
-    logger.info(f"Database url: {POSTGRES_DB_URL}")
 
     @property
     def test_postgres_url(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.test_postgres_db}"
-    
 
-class Settings(PostgresSettings):
+
+class KeycloakSettings(BaseSettings):
+    KEYCLOAK_DOMAIN: str
+    KEYCLOAK_REALM: str
+    KEYCLOAK_CLIENT_ID: List[str]
+
+    @property
+    def jwks_url(self) -> str:
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}/protocol/openid-connect/certs"
+
+    @property
+    def token_url(self) -> str:
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}/protocol/openid-connect/token"
+
+    @property
+    def issuer(self) -> str:
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}"
+
+    @field_validator("KEYCLOAK_CLIENT_ID", mode="before")
+    def parse_json_list(cls, v):
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
+
+
+class Settings(KeycloakSettings, PostgresSettings):
     class Config:
-        env_file = ".env"
-        
+        env_file = ["../../.env", ".env"]
+        extra = "ignore"
+
+
 settings = Settings()
