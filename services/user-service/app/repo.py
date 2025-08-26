@@ -17,7 +17,8 @@ class UserRepository:
         async with self.db.get_session() as session:
             user = User(id=id, email=email, preferred_username=preferred_username)
             session.add(user)
-            await session.flush()
+            await session.commit()
+            await session.refresh(user)
             return user
 
     async def get_user(self, user_id: uuid.UUID) -> Optional[User]:

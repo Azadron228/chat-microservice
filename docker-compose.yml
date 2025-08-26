@@ -145,18 +145,18 @@ services:
     networks:
       chat-network:
         aliases:
-          - ${KC_HOSTNAME}
+          - auth.local
 
   postgres:
     image: postgres:16
     environment:
-      - POSTGRES_DB=${KC_DB_DATABASE}
       - POSTGRES_USER=${KC_DB_USER}
       - POSTGRES_PASSWORD=${KC_DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./shared/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U keycloak"]
       interval: 10s

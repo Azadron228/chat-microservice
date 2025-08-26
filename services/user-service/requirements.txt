@@ -5,4 +5,4 @@ alembic
 asyncpg
 sqlalchemy[asyncio]
 uvicorn
-pyjwt
+pyjwt[crypto]

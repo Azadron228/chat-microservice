@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 jwks_client = PyJWKClient(settings.jwks_url)
 
+
 async def verify_token(token: str) -> Optional[TokenPayload]:
     """Verify JWT token and return validated payload."""
     try:
@@ -20,7 +21,7 @@ async def verify_token(token: str) -> Optional[TokenPayload]:
             token,
             signing_key.key,
             algorithms=["RS256"],
-            audience=KeycloakSettings.KEYCLOAK_CLIENT_ID,
+            # audience=KeycloakSettings.KEYCLOAK_CLIENT_ID,
             issuer=settings.issuer,
             options={
                 "verify_aud": False,
