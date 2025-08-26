@@ -41,6 +41,7 @@ class PostgresSettings(BaseSettings):
 
 class Settings(PostgresSettings):
     class Config:
-        env_file = ".env"
+        env_prefix = "ROOM_"
+        env_file = "../../.env"
         
 settings = Settings()

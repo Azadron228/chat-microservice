@@ -37,7 +37,6 @@ class PostgresSettings(BaseSettings):
     def test_postgres_url(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.test_postgres_db}"
 
-
 class KeycloakSettings(BaseSettings):
     KEYCLOAK_DOMAIN: str
     KEYCLOAK_REALM: str
@@ -60,12 +59,14 @@ class KeycloakSettings(BaseSettings):
         if isinstance(v, str):
             return json.loads(v)
         return v
-
+    
 
 class Settings(KeycloakSettings, PostgresSettings):
     class Config:
-        env_file = ["../../.env", ".env"]
+        env_file = ["../../.env"]
+        env_prefix = "USER_"
         extra = "ignore"
 
 
 settings = Settings()
+ 

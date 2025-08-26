@@ -7,7 +7,6 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - services/chat-service/.env
       - .env
     networks:
       chat-network:
@@ -32,7 +31,7 @@ services:
     ports:
       - "50051:50051"
     env_file:
-      - services/message-service/.env
+      - .env
     networks:
       chat-network:
         aliases:
@@ -56,7 +55,6 @@ services:
     ports:
       - "8010:8000"
     env_file:
-      - services/room-service/.env
       - .env
     networks:
       chat-network:
@@ -81,7 +79,7 @@ services:
     ports:
       - "8020:8000"
     env_file:
-      - services/user-service/.env
+      - .env
     networks:
       chat-network:
         aliases:
@@ -129,12 +127,21 @@ services:
     image: keycloak/keycloak:26.3
     ports:
       - 8080:8080
-    command: start-dev
-    env_file:
-      - .env
+    command: start-dev --import-realm
+    environment:
+      - KC_DB_VENDOR=POSTGRES
+      - KC_DB_ADDR=postgres
+      - KC_DB_DATABASE=${KC_DB_DATABASE}
+      - KC_DB_USER=${KC_DB_USER}
+      - KC_DB_PASSWORD=${KC_DB_PASSWORD}
+      - KC_HOSTNAME=localhost
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - ./shared/keycloack:/opt/keycloak/data/import
     networks:
       chat-network:
         aliases:

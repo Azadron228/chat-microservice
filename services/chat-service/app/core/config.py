@@ -39,7 +39,7 @@ class Settings(KeycloakSettings, BaseAppSettings):
     NATS_URL: str
     MESSAGE_SERVICE_GRPC_URL: str
     class Config:
-        env_file = ["../../.env", ".env"]
+        env_file = ["../../.env"]
         extra = "ignore"
 
 settings = Settings()
