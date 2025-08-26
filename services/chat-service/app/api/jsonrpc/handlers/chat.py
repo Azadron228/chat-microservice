@@ -19,7 +19,7 @@ async def hello(user_id: str):
 
 @jsonrpc.method("chat.join_room")
 async def join_room(websocket, user_id: str, room_id: str):
-    connection_manager.connect(user_id, websocket)
+    connection_manager.join_room(user_id, room_id=room_id, websocket=websocket)
 
     return {
         "status": "joined",

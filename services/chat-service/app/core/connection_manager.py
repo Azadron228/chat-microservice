@@ -6,6 +6,8 @@ class ConnectionManager:
     def __init__(self):
         self.connections: Dict[str, object] = {}
 
+        self.rooms: Dict[str, set[str]] = {}
+
     def connect(self, user_id: str, websocket):
         logger.info(f"User {user_id} connected")
         logger.info(f"Current connections: {list(self.connections.keys())}")
@@ -13,6 +15,10 @@ class ConnectionManager:
 
     def disconnect(self, user_id: str):
         self.connections.pop(user_id, None)
+
+    def join_room(self, user_id: str, room_id: str, websocket):
+        self.connect(user_id, websocket)
+        self.rooms.setdefault(room_id, set()).add(user_id)
 
     def is_online(self, user_id: str) -> bool:
         return user_id in self.connections
@@ -27,5 +33,9 @@ class ConnectionManager:
         logger.info(f"Broadcasting to {len(user_ids)} users")
         for uid in user_ids:
             await self.send_to_user(uid, message)
+
+    async def broadcast_room(self, room_id: str, message: dict):
+        user_ids = self.rooms.get(room_id, set())
+        await self.broadcast(user_ids, message)
 
 connection_manager = ConnectionManager()

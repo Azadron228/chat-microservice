@@ -5,7 +5,8 @@ from cassandra.policies import DCAwareRoundRobinPolicy
 from app.core.config import settings
 
 cluster = Cluster(
-    contact_points=[settings.SCYLLADB_URL]
+    contact_points=[settings.SCYLLADB_URL],
+    compression = True
 )
 
 
