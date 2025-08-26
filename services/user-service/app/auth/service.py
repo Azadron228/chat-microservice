@@ -21,7 +21,6 @@ async def verify_token(token: str) -> Optional[TokenPayload]:
             token,
             signing_key.key,
             algorithms=["RS256"],
-            # audience=KeycloakSettings.KEYCLOAK_CLIENT_ID,
             issuer=settings.issuer,
             options={
                 "verify_aud": False,

@@ -19,15 +19,15 @@ class KeycloakSettings(BaseAppSettings):
 
     @property
     def jwks_url(self) -> str:
-        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOACK_REALM}/protocol/openid-connect/certs"
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}/protocol/openid-connect/certs"
 
     @property
     def token_url(self) -> str:
-        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOACK_REALM}/protocol/openid-connect/token"
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}/protocol/openid-connect/token"
 
     @property
     def issuer(self) -> str:
-        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOACK_REALM}"
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}"
     
     @field_validator("KEYCLOAK_CLIENT_ID", mode="before")
     def parse_json_list(cls, v):
