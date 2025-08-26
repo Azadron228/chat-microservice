@@ -17,29 +17,14 @@ jsonrpc = JsonRpcRouter()
 async def hello(user_id: str):
     return f"Hello, your user_id: {user_id}"
 
-@jsonrpc.method("room.join_dm")
-async def join_dm(websocket, user_id: str, target_user_id: str):
-    room_id = room_service.get_or_create_dm_room(user_id, target_user_id)
+@jsonrpc.method("chat.join_room")
+async def join_room(websocket, user_id: str, room_id: str):
     connection_manager.connect(user_id, websocket)
-    return f"Joined room_id: {room_id}"
 
-@jsonrpc.method("room.get_members")
-async def join_dm(room_id):
-    members = room_service.get_room_members(room_id=room_id)
     return {
-        "room_id": room_id,
-        "members": list(members),
-        "count": len(members),
+        "status": "joined",
+        "room_id": room_id
     }
-
-# @jsonrpc.method("chat.join_room")
-# async def join_room(websocket):
-#     room_id = str(uuid.uuid1())
-#     connection_manager.connect(user_id, websocket)
-
-#     return {
-#         "room_id": room_id
-#     }
 
 @jsonrpc.method("chat.send_message")
 async def handle_send_message(user_id: str, room_id:str, content: str):
@@ -53,7 +38,7 @@ async def handle_send_message(user_id: str, room_id:str, content: str):
 
 @jsonrpc.method("chat.get_messages")
 async def get_messages(room_id:str):
-    async with grpc.aio.insecure_channel(settings.MESSAGE_SERVICE_GRPC_URL) as channel:
+    async with grpc.aio.insecure_channel("message.local:50051") as channel:
         stub = message_pb2_grpc.MessageServiceStub(channel)
 
         request = message_pb2.ListMessagesRequest(

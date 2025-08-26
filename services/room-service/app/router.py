@@ -17,6 +17,13 @@ async def create_room(payload: RoomCreate, repo: RoomRepository = Depends(get_re
     )
     return room
 
+@router.post("/rooms/dm", response_model=RoomOut)
+async def get_or_create_dm(
+    user_id1: str,
+    user_id2: str,
+    repo: RoomRepository = Depends(get_repo),
+):
+    return await repo.get_or_create_dm(user_id1, user_id2)
 
 @router.get("/rooms", response_model=List[RoomOut])
 async def list_rooms(repo: RoomRepository = Depends(get_repo)):

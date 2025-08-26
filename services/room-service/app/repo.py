@@ -27,6 +27,40 @@ class RoomRepository:
             await session.flush()
             return room
 
+    async def get_or_create_dm(self, user1_id: str, user2_id: str) -> Room:
+        u1, u2 = sorted([user1_id, user2_id])
+
+        # Create deterministic room_id from both user ids
+        room_id = uuid.uuid5(uuid.NAMESPACE_DNS, f"{u1}:{u2}")
+
+        async with self.db.get_session() as session:
+            stmt = sa.select(Room).where(Room.room_id == room_id, Room.type == "dm")
+            result = await session.execute(stmt)
+            room = result.scalars().first()
+
+            if room:
+                return room
+
+            room = Room(
+                room_id=room_id,
+                type="dm",
+                name="",
+                alias="",
+                description="",
+            )
+            session.add(room)
+            await session.flush()
+
+            session.add_all(
+                [
+                    RoomMember(room_id=room.room_id, user_id=u1),
+                    RoomMember(room_id=room.room_id, user_id=u2),
+                ]
+            )
+            await session.flush()
+
+            return room
+
     async def get_room(self, room_id: uuid.UUID) -> Optional[Room]:
         async with self.db.get_session() as session:
             stmt = sa.select(Room).where(Room.room_id == room_id).options(

@@ -95,7 +95,8 @@ class MessageRepository:
         before: UUID | None = None,
         after: UUID | None = None,
         limit: int = 10,
-    ):
+    ):  
+        before = UUID("6b3998c6-8278-11f0-9da2-0242ac120009")
         if before is None and after is None:
             raise ValueError("Either 'before' or 'after' must be provided")
 

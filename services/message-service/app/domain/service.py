@@ -52,8 +52,8 @@ class MessageService:
     async def list_messages(
         self,
         room_id: UUID,
-        before: UUID,
-        after: UUID,
+        before: UUID | None = None,
+        after: UUID | None = None,
         limit: int = 10
     ):
         rows = await self.repo.list_messages(room_id,before=before, after=after, limit=limit)

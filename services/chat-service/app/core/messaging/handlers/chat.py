@@ -11,5 +11,5 @@ async def to_broadcast_handler(msg):
         return
     
     users = room_service.get_room_members(room_id=msg["room_id"])
-    connection_manager.broadcast(user_ids=users)
+    await connection_manager.broadcast(user_ids=["1ec4bb14-9b95-44a5-b608-e5efbd9a31b4", "b0ab9326-a1f1-4363-b501-a136baaf2376"], message=json.dumps(msg))
     

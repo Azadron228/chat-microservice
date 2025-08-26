@@ -15,8 +15,7 @@ async def get_session():
         session = cluster.connect("chat")
         yield session
     finally:
-        session.shutdown()
-
+        pass
 
 async def await_response_future(future):
     loop = asyncio.get_event_loop()
