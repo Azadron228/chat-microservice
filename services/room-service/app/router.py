@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.schemas import RoomOut, RoomMemberOut, RoomCreate, MemberAdd
 from app.repo import RoomRepository
-from app.deps import get_repo
+from app.deps import get_current_user, get_repo
 
 router = APIRouter()
 
@@ -17,17 +17,17 @@ async def create_room(payload: RoomCreate, repo: RoomRepository = Depends(get_re
     )
     return room
 
-@router.post("/rooms/dm", response_model=RoomOut)
+@router.post("/rooms/dm/{user_id}", response_model=RoomOut)
 async def get_or_create_dm(
-    user_id1: str,
-    user_id2: str,
+    user_id: str,
+    user = Depends(get_current_user),
     repo: RoomRepository = Depends(get_repo),
 ):
-    return await repo.get_or_create_dm(user_id1, user_id2)
+    return await repo.get_or_create_dm(user.sub, user_id)
 
 @router.get("/rooms", response_model=List[RoomOut])
-async def list_rooms(repo: RoomRepository = Depends(get_repo)):
-    return await repo.list_rooms()
+async def list_rooms(repo: RoomRepository = Depends(get_repo), user = Depends(get_current_user)):
+    return await repo.list_rooms_by_user(user_id=user.sub)
 
 
 @router.get("/rooms/{room_id}", response_model=RoomOut)

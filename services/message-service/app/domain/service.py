@@ -1,13 +1,41 @@
-import json
 from typing import List, Optional
 from uuid import UUID
-import uuid
 import logging
 from datetime import datetime
 from app.domain.repo import MessageRepository, message_repo_factory
 from app.core.messaging.factory import broker
-from app.core.casssandra import get_session
+
 logger = logging.getLogger(__name__)
+
+
+from dataclasses import dataclass, asdict, field
+from datetime import datetime
+from typing import List, Optional
+from uuid import UUID, uuid1
+
+@dataclass
+class Message:
+    room_id: UUID
+    message_id: int
+    author_id: UUID
+    content: str
+    created_at: datetime
+    updated_at: datetime
+    media_ids: List[UUID] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        """Convert to JSON-serializable dict."""
+        return {
+            "room_id": str(self.room_id),
+            "message_id": self.message_id,
+            "author_id": str(self.author_id),
+            "content": self.content,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "media_ids": [str(mid) for mid in self.media_ids],
+        }
+
+
 class MessageService:
     def __init__(self, repo: MessageRepository, broker):
         self.repo = repo
@@ -20,34 +48,29 @@ class MessageService:
         content: str,
         media_ids: Optional[List[UUID]] = None
     ) -> dict:
-        message_id = uuid.uuid1()  # UUID1 for chronological order
-        timestamp = datetime.now()
-        room_id = UUID(room_id)
-        author_id = UUID(author_id)
 
-        message = {
-            "message_id": str(message_id),
-            "room_id": str(room_id),
-            "author_id": str(author_id),
-            "content": content,
-            "media_ids": [str(mid) for mid in (media_ids or [])],
-            "created_at": timestamp.isoformat()
-        }
-        logger.info(f"Type of room_id: {type(room_id)}")
+        message_id = await self.repo.save_message(
+            room_id=UUID(room_id),
+            author_id=UUID(author_id),
+            content=content,
+            media_ids=media_ids,
+        )
 
-        await self.repo.save_message(
+        message = Message(
             room_id=room_id,
             message_id=message_id,
             author_id=author_id,
             content=content,
-            media_ids=media_ids,
-            timestamp=timestamp
+            media_ids=media_ids or [],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
-        # Publish event for broadcasting
-        await self.broker.publish("chat.messages.to_broadcast", message)
+        # You may want to serialize before publishing
+        await self.broker.publish("chat.messages.to_broadcast", message.to_dict())
+        await self.broker.publish("chat.room.update_last_message", message.to_dict())
 
-        return message
+        return message.to_dict()
     
     async def list_messages(
         self,

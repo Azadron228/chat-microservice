@@ -1,6 +1,8 @@
+import json
 import logging
+from typing import List
 from pydantic_settings import BaseSettings
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 
 logger = logging.getLogger(__name__)
 class PostgresSettings(BaseSettings):
@@ -38,8 +40,31 @@ class PostgresSettings(BaseSettings):
     def test_postgres_url(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.test_postgres_db}"
     
+class KeycloakSettings(BaseSettings):
+    KEYCLOAK_DOMAIN: str
+    KEYCLOAK_REALM: str
+    KEYCLOAK_CLIENT_ID: List[str]
 
-class Settings(PostgresSettings):
+    @property
+    def jwks_url(self) -> str:
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}/protocol/openid-connect/certs"
+
+    @property
+    def token_url(self) -> str:
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}/protocol/openid-connect/token"
+
+    @property
+    def issuer(self) -> str:
+        return f"{self.KEYCLOAK_DOMAIN}/realms/{self.KEYCLOAK_REALM}"
+
+    @field_validator("KEYCLOAK_CLIENT_ID", mode="before")
+    def parse_json_list(cls, v):
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
+    
+class Settings(PostgresSettings, KeycloakSettings):
+    NATS_URL: str = "nats://nats:4222"
     class Config:
         env_prefix = "ROOM_"
         env_file = "../../.env"

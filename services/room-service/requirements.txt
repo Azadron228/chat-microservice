@@ -5,4 +5,5 @@ alembic
 asyncpg
 sqlalchemy[asyncio]
 uvicorn
-lz4
+nats-py
+pyjwt[crypto]

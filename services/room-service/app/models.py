@@ -8,7 +8,7 @@ from app.base import Base
 class Room(Base):
     __tablename__ = "rooms"
 
-    room_id: Mapped[uuid.UUID] = mapped_column(
+    room_id: Mapped[int] = mapped_column(
         sa.Uuid, primary_key=True, default=uuid.uuid4
     )
     type: Mapped[str] = mapped_column(sa.String(length=50), nullable=False)
@@ -16,7 +16,7 @@ class Room(Base):
     alias: Mapped[str] = mapped_column(sa.String(length=255), nullable=True)
     description: Mapped[str] = mapped_column(sa.Text, nullable=True)
 
-    last_message_id: Mapped[uuid.UUID] = mapped_column(sa.Uuid, nullable=True)
+    last_message_id: Mapped[int] = mapped_column(sa.Integer, nullable=True)
     last_message_preview: Mapped[str] = mapped_column(sa.String(length=255), nullable=True)
     last_message_at: Mapped[datetime] = mapped_column(sa.DateTime, nullable=True)
     last_message_sender_id: Mapped[str] = mapped_column(sa.String(length=64), nullable=True)
@@ -36,6 +36,6 @@ class RoomMember(Base):
         sa.String(length=64), primary_key=True
     )
 
-    unread_count: Mapped[int] = mapped_column(sa.Integer, default=0, nullable=False)
+    last_read_message_id: Mapped[int] = mapped_column(sa.Integer)
 
     room: Mapped["Room"] = relationship(back_populates="members")

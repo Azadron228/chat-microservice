@@ -66,3 +66,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
     finally:
         await connection_manager.disconnect(user_id)
+        await websocket.close()

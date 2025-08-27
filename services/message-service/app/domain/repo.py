@@ -13,6 +13,7 @@ from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
+
 class MessageRepository:
     def __init__(self, session: Session):
         self.session = session
@@ -32,7 +33,14 @@ class MessageRepository:
             WHERE room_id = ? AND message_id = ?
         """)
 
-       # Before (older messages)
+        # Get last message id in a room
+        self.get_last_message_id: PreparedStatement = session.prepare("""
+            SELECT message_id FROM chat.messages
+            WHERE room_id = ?
+            LIMIT 1
+        """)
+
+        # Before (older messages)
         self.get_messages_before_ps: PreparedStatement = session.prepare("""
             SELECT *
             FROM chat.messages
@@ -65,15 +73,20 @@ class MessageRepository:
             WHERE message_id = ? AND user_id = ?
         """)
 
+    async def next_message_id(self, room_id: UUID) -> int:
+        future = self.session.execute_async(self.get_last_message_id, (room_id,))
+        result = await await_response_future(future)
+        row = result.one()
+        return 1 if row is None else row.message_id + 1
+
     async def save_message(
         self,
         room_id: UUID,
-        message_id: UUID,
         author_id: UUID,
         content: str,
         media_ids: Optional[List[UUID]],
-        timestamp: datetime
     ):
+        message_id = await self.next_message_id(room_id)
         future = self.session.execute_async(
             self.insert_message_ps,
             (
@@ -82,12 +95,13 @@ class MessageRepository:
                 author_id,
                 content,
                 media_ids or [],
-                timestamp,
-                timestamp
-            )
+                datetime.now(),
+                datetime.now(),
+            ),
         )
-        logger.info(f"Save message with id: {str(message_id)}")
         await await_response_future(future)
+
+        return message_id
 
     async def list_messages(
         self,
@@ -95,7 +109,7 @@ class MessageRepository:
         before: UUID | None = None,
         after: UUID | None = None,
         limit: int = 10,
-    ):  
+    ):
         before = UUID("6b3998c6-8278-11f0-9da2-0242ac120009")
         if before is None and after is None:
             raise ValueError("Either 'before' or 'after' must be provided")
@@ -105,34 +119,21 @@ class MessageRepository:
 
         if before is not None:
             future = self.session.execute_async(
-                self.get_messages_before_ps,
-                (room_id, before, limit)
+                self.get_messages_before_ps, (room_id, before, limit)
             )
         else:
             future = self.session.execute_async(
-                self.get_messages_after_ps,
-                (room_id, after, limit)
+                self.get_messages_after_ps, (room_id, after, limit)
             )
 
         result = await await_response_future(future)
         return list(result)
-    
 
     async def update_message(
-        self,
-        room_id: UUID,
-        message_id: UUID,
-        content: str,
-        updated_at: datetime
+        self, room_id: UUID, message_id: UUID, content: str, updated_at: datetime
     ):
         future = self.session.execute_async(
-            self.update_message_ps,
-            (
-                content,
-                updated_at,
-                room_id,
-                message_id
-            )
+            self.update_message_ps, (content, updated_at, room_id, message_id)
         )
         await await_response_future(future)
 
@@ -142,17 +143,10 @@ class MessageRepository:
         user_id: UUID,
         status: int,
         delivered_at: Optional[datetime] = None,
-        seen_at: Optional[datetime] = None
+        seen_at: Optional[datetime] = None,
     ):
         future = self.session.execute_async(
-            self.update_status_ps,
-            (
-                message_id,
-                user_id,
-                status,
-                delivered_at,
-                seen_at
-            )
+            self.update_status_ps, (message_id, user_id, status, delivered_at, seen_at)
         )
         await await_response_future(future)
 
@@ -160,6 +154,7 @@ class MessageRepository:
         return await await_response_future(
             self.session.execute_async(self.get_status_ps, (message_id, user_id))
         )
+
 
 async def message_repo_factory() -> MessageRepository:
     async with get_session() as session:

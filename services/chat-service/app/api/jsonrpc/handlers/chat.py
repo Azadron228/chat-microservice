@@ -28,7 +28,7 @@ async def join_room(websocket, user_id: str, room_id: str):
 
 @jsonrpc.method("chat.send_message")
 async def handle_send_message(user_id: str, room_id:str, content: str):
-    room_id = str(uuid.uuid1())
+
     await broker.publish("chat.messages.message.to_save", {
         "content": content,
         "room_id": room_id,

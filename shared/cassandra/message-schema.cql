@@ -7,7 +7,7 @@ WITH REPLICATION = {
 
 CREATE TABLE IF NOT EXISTS chat.messages (
     room_id UUID,
-    message_id UUID,
+    message_id BIGINT,
     author_id UUID,
     content TEXT,
     media_ids LIST<UUID>,

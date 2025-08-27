@@ -3,6 +3,7 @@ from typing import Optional, Sequence
 
 import sqlalchemy as sa
 from sqlalchemy.orm import selectinload
+from datetime import datetime
 
 from app.database import Database
 from app.models import Room, RoomMember
@@ -114,3 +115,66 @@ class RoomRepository:
             stmt = sa.select(RoomMember).where(RoomMember.room_id == room_id)
             result = await session.execute(stmt)
             return result.scalars().all()
+
+    async def update_last_message(
+        self,
+        room_id: uuid.UUID,
+        message_id: int,
+        preview: str,
+        created_at: datetime,
+        author_id: str,
+    ) -> None:
+        async with self.db.get_session() as session:
+            stmt = (
+                sa.update(Room)
+                .where(Room.room_id == room_id)
+                .values(
+                    last_message_id=message_id,
+                    last_message_preview=preview[:255],  # truncate safely
+                    last_message_at=created_at,
+                    last_message_sender_id=author_id,
+                )
+            )
+            await session.execute(stmt)
+
+    async def list_rooms_by_user(self, user_id: str) -> list[dict]:
+        async with self.db.get_session() as session:
+            # Join Room and RoomMember
+            stmt = (
+                sa.select(
+                    Room.room_id,
+                    Room.type,
+                    Room.name,
+                    Room.alias,
+                    Room.description,
+                    Room.last_message_id,
+                    Room.last_message_preview,
+                    Room.last_message_at,
+                    Room.last_message_sender_id,
+                    RoomMember.last_read_message_id,
+                )
+                .join(RoomMember, RoomMember.room_id == Room.room_id)
+                .where(RoomMember.user_id == user_id)
+            )
+            result = await session.execute(stmt)
+
+            rooms = []
+            for row in result.all():
+                unread_count = 0
+                if row.last_message_id is not None and row.last_read_message_id is not None:
+                    unread_count = max(0, row.last_message_id - row.last_read_message_id)
+
+                rooms.append({
+                    "room_id": str(row.room_id),
+                    "type": row.type,
+                    "name": row.name,
+                    "alias": row.alias,
+                    "description": row.description,
+                    "last_message_id": row.last_message_id,
+                    "last_message_preview": row.last_message_preview,
+                    "last_message_at": row.last_message_at.isoformat() if row.last_message_at else None,
+                    "last_message_sender_id": row.last_message_sender_id,
+                    "unread_count": unread_count,
+                })
+
+            return rooms
