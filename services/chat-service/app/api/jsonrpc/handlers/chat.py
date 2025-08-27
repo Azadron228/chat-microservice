@@ -17,9 +17,9 @@ jsonrpc = JsonRpcRouter()
 async def hello(user_id: str):
     return f"Hello, your user_id: {user_id}"
 
-@jsonrpc.method("chat.join_room")
+@jsonrpc.method("chat.connect_room")
 async def join_room(websocket, user_id: str, room_id: str):
-    connection_manager.join_room(user_id, room_id=room_id, websocket=websocket)
+    connection_manager.connect_room(user_id, room_id=room_id)
 
     return {
         "status": "joined",
