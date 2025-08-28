@@ -1,9 +1,14 @@
 import uuid
+import enum
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.base import Base
 
+class RoomType(enum.Enum):
+    DIRECT = "direct"
+    GROUP = "group"
+    CHANNEL = "channel"
 
 class Room(Base):
     __tablename__ = "rooms"
@@ -11,7 +16,9 @@ class Room(Base):
     room_id: Mapped[int] = mapped_column(
         sa.Uuid, primary_key=True, default=uuid.uuid4
     )
-    type: Mapped[str] = mapped_column(sa.String(length=50), nullable=False)
+    type: Mapped[RoomType] = mapped_column(
+        sa.Enum(RoomType), nullable=False
+    )
     name: Mapped[str] = mapped_column(sa.String(length=255), nullable=True)
     alias: Mapped[str] = mapped_column(sa.String(length=255), nullable=True)
     description: Mapped[str] = mapped_column(sa.Text, nullable=True)

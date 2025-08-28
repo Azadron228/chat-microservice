@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from logging.config import fileConfig
 
 from alembic import context
@@ -12,8 +11,6 @@ from app.models import *  # noqa F403
 from app.base import Base
 from app.config import settings
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

@@ -68,5 +68,6 @@ class Settings(PostgresSettings, KeycloakSettings):
     class Config:
         env_prefix = "ROOM_"
         env_file = "../../.env"
+        extra = "ignore"
         
 settings = Settings()

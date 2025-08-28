@@ -5,40 +5,44 @@ from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 
+
 class ConnectionManager:
     def __init__(self):
-        # user_id -> websocket
         self.connections: Dict[str, WebSocket] = {}
 
-        # room_id -> set of user_ids
-        self.rooms: Dict[str, Set[str]] = {}
+        self.user_rooms: Dict[str, Set[str]] = {}
+        self.room_users: Dict[str, Set[str]] = {}
 
     async def connect(self, user_id: str, websocket: WebSocket):
-        """Register a new user connection."""
         self.connections[user_id] = websocket
+        user_rooms = await self.fetch_user_rooms(user_id)
+        self.user_rooms[user_id] = user_rooms
+
+        for room_id in user_rooms:
+            if room_id not in self.room_users:
+                self.room_users[room_id] = set()
+            self.room_users[room_id].add(user_id)
+
         logger.info(f"User {user_id} connected. Total: {len(self.connections)}")
 
     async def disconnect(self, user_id: str):
         self.connections.pop(user_id, None)
-        for users in self.rooms.values():
+        for users in self.room_users.values():
             users.discard(user_id)
         logger.info(f"User {user_id} disconnected. Total: {len(self.connections)}")
 
     async def connect_room(self, user_id: str, room_id: str):
-        """Add user to a room."""
         if user_id not in self.connections:
             raise ValueError(f"User {user_id} not connected")
-        self.rooms.setdefault(room_id, set()).add(user_id)
+        self.room_users.setdefault(room_id, set()).add(user_id)
         logger.info(f"User {user_id} joined room {room_id}")
 
     async def disconnect_room(self, user_id: str, room_id: str):
-        """Remove user from a room."""
-        if room_id in self.rooms:
-            self.rooms[room_id].discard(user_id)
+        if room_id in self.room_users:
+            self.room_users[room_id].discard(user_id)
         logger.info(f"User {user_id} left room {room_id}")
 
     async def send_to_user(self, user_id: str, message: dict):
-        """Send a message to a single user."""
         ws = self.connections.get(user_id)
         if ws:
             try:
@@ -48,17 +52,15 @@ class ConnectionManager:
                 await self.disconnect(user_id)
 
     async def broadcast(self, user_ids: Set[str], message: dict):
-        """Send a message to a set of users."""
         for uid in user_ids:
             await self.send_to_user(uid, message)
 
     async def broadcast_room(self, room_id: str, message: dict):
-        """Broadcast message to all users in a room."""
-        user_ids = self.rooms.get(room_id, set())
+        user_ids = self.room_users.get(room_id, set())
         await self.broadcast(user_ids, message)
 
     async def broadcast_all(self, message: dict):
-        """Broadcast message to all connected users."""
         await self.broadcast(set(self.connections.keys()), message)
+
 
 connection_manager = ConnectionManager()
