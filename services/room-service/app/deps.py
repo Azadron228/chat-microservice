@@ -6,18 +6,23 @@ from fastapi.security import OAuth2AuthorizationCodeBearer
 from app.auth.service import verify_token
 from app.auth.schemas import TokenPayload
 from fastapi import HTTPException, status
+from app.service import RoomService
 
 db = Database(
     url=settings.POSTGRES_DB_URL,
 )
 
 repo = RoomRepository(db)
+service = RoomService(repo)
 
 async def get_db():
     return db
 
-async def get_repo() -> RoomRepository:
+async def provide_room_repo() -> RoomRepository:
     return repo
+
+async def provide_room_service() -> RoomService:
+    return service
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="http://localhost:8080/realms/chat/protocol/openid-connect/auth",

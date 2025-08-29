@@ -14,7 +14,7 @@ async def handle_message_update(data: dict):
         content = data["content"]
         created_at = datetime.fromisoformat(data["created_at"])
 
-        await repo.update_last_message(
+        await service.update_last_message(
             room_id=room_id,
             message_id=message_id,
             preview=content,

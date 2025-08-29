@@ -43,6 +43,4 @@ class RoomMember(Base):
         sa.String(length=64), primary_key=True
     )
 
-    last_read_message_id: Mapped[int] = mapped_column(sa.Integer)
-
     room: Mapped["Room"] = relationship(back_populates="members")

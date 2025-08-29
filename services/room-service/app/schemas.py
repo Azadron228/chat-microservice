@@ -5,38 +5,44 @@ from enum import Enum
 from datetime import datetime
 from app.models import RoomType
 
-class RoomOut(BaseModel):
+
+class RoomBase(BaseModel):
     room_id: uuid.UUID
     type: RoomType
+
+    last_message_id: Optional[int] = None
+    last_message_preview: Optional[str] = None
+    last_message_at: Optional[datetime] = None
+    last_message_sender_id: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class RoomOut(RoomBase):
     name: Optional[str] = None
     alias: Optional[str] = None
     description: Optional[str] = None
+    unread_count: Optional[int] = 0
 
-    last_message_id: Optional[int] = None
-    last_message_preview: Optional[str] = None
-    last_message_at: Optional[datetime] = None
-    last_message_sender_id: Optional[str] = None
 
-    class Config:
-        from_attributes = True
-class DmRoomOut(BaseModel):
-    room_id: uuid.UUID
-    type: RoomType
+class DmRoomOut(RoomBase):
     user_id: Optional[str] = None
+    unread_count: Optional[int] = 0
 
-    last_message_id: Optional[int] = None
-    last_message_preview: Optional[str] = None
-    last_message_at: Optional[datetime] = None
-    last_message_sender_id: Optional[str] = None
 
-    class Config:
-        from_attributes = True
 class RoomCreate(BaseModel):
-    type: RoomType
+    type: RoomType = RoomType.GROUP
     name: Optional[str] = None
     alias: Optional[str] = None
     description: Optional[str] = None
     members: Optional[List[str]] = None
+
+
+class RoomUpdate(BaseModel):
+    name: Optional[str] = None
+    alias: Optional[str] = None
+    description: Optional[str] = None
 
 
 class RoomUpdateLastMessage(BaseModel):
