@@ -2,7 +2,6 @@ import logging
 from cassandra.query import PreparedStatement
 from uuid import UUID
 from datetime import datetime
-from app.core.casssandra import await_response_future, get_session
 
 
 import uuid
@@ -10,6 +9,7 @@ from datetime import datetime
 from cassandra.cluster import Session, PreparedStatement
 from typing import List, Optional
 from uuid import UUID
+from app.domain.schemas import MessageCreate, MessageOut
 
 logger = logging.getLogger(__name__)
 
@@ -17,91 +17,97 @@ logger = logging.getLogger(__name__)
 class MessageRepository:
     def __init__(self, session: Session):
         self.session = session
+        self._prepare_statements()
 
-        # Insert message
-        self.insert_message_ps: PreparedStatement = session.prepare("""
+    def _prepare_statements(self) -> None:
+        """Prepare all Cassandra prepared statements for the repository."""
+        # Insert message into chat.messages
+        self.insert_message_ps: PreparedStatement = self.session.prepare("""
             INSERT INTO chat.messages (
-                room_id, message_id, author_id,
-                content, media_ids, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                room_id, bucket, message_id, author_id,
+                content, status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """)
 
-        # Update message content
-        self.update_message_ps: PreparedStatement = session.prepare("""
-            UPDATE chat.messages
-            SET content = ?, updated_at = ?
-            WHERE room_id = ? AND message_id = ?
-        """)
-
-        # Get last message id in a room
-        self.get_last_message_id: PreparedStatement = session.prepare("""
-            SELECT message_id FROM chat.messages
-            WHERE room_id = ?
-            LIMIT 1
-        """)
-
-        # Before (older messages)
-        self.get_messages_before_ps: PreparedStatement = session.prepare("""
-            SELECT *
+        # Select messages by room_id and bucket
+        self.select_messages_by_room_ps: PreparedStatement = self.session.prepare("""
+            SELECT room_id, bucket, message_id, author_id, content, status, created_at, updated_at
             FROM chat.messages
-            WHERE room_id = ?
-            AND message_id < ?
+            WHERE room_id = ? AND bucket = ?
             ORDER BY message_id DESC
-            LIMIT ?
         """)
 
-        # After (newer messages)
-        self.get_messages_after_ps: PreparedStatement = session.prepare("""
-            SELECT *
+        # Select messages before a specific message
+        self.select_messages_before_ps: PreparedStatement = self.session.prepare("""
+            SELECT room_id, bucket, message_id, author_id, content, status, created_at, updated_at
             FROM chat.messages
-            WHERE room_id = ?
-            AND message_id > ?
-            ORDER BY message_id ASC
-            LIMIT ?
+            WHERE room_id = ? AND bucket = ? AND message_id > ?
+            ORDER BY message_id DESC
         """)
 
-        # Insert or update user status
-        self.update_status_ps: PreparedStatement = session.prepare("""
-            INSERT INTO chat.message_user_status (
-                message_id, user_id, delivered_at, seen_at
-            ) VALUES (?, ?, ?, ?)
+        # Select messages after a specific message
+        self.select_messages_after_ps: PreparedStatement = self.session.prepare("""
+            SELECT room_id, bucket, message_id, author_id, content, status, created_at, updated_at
+            FROM chat.messages
+            WHERE room_id = ? AND bucket = ? AND message_id < ?
+            ORDER BY message_id DESC
         """)
 
-        # Get user status
-        self.get_status_ps: PreparedStatement = session.prepare("""
-            SELECT * FROM chat.message_user_status
-            WHERE message_id = ? AND user_id = ?
+        # Update message content and status
+        self.update_message_content_ps: PreparedStatement = self.session.prepare("""
+            UPDATE chat.messages
+            SET content = ?, status = ?, updated_at = ?
+            WHERE room_id = ? AND bucket = ? AND message_id = ?
         """)
 
-    async def next_message_id(self, room_id: UUID) -> int:
-        future = self.session.execute_async(self.get_last_message_id, (room_id,))
-        result = await await_response_future(future)
-        row = result.one()
-        return 1 if row is None else row.message_id + 1
+        # Delete message
+        self.delete_message_ps: PreparedStatement = self.session.prepare("""
+            DELETE FROM chat.messages
+            WHERE room_id = ? AND bucket = ? AND message_id = ?
+        """)
 
-    async def save_message(
-        self,
-        room_id: UUID,
-        author_id: UUID,
-        content: str,
-        media_ids: Optional[List[UUID]],
-    ):
-        message_id = await self.next_message_id(room_id)
-        future = self.session.execute_async(
-            self.insert_message_ps,
-            (
-                room_id,
-                message_id,
-                author_id,
-                content,
-                media_ids or [],
-                datetime.now(),
-                datetime.now(),
-            ),
+        # Insert user message status
+        self.insert_user_message_status_ps: PreparedStatement = self.session.prepare("""
+            INSERT INTO chat.user_message_status (
+                user_id, room_id, message_id, delivered_at, seen_at
+            ) VALUES (?, ?, ?, ?, ?)
+        """)
+
+        # Select user message status
+        self.select_user_message_status_ps: PreparedStatement = self.session.prepare("""
+            SELECT user_id, room_id, message_id, delivered_at, seen_at
+            FROM chat.user_message_status
+            WHERE user_id = ? AND room_id = ? AND message_id = ?
+        """)
+
+        # Update user message status (delivered_at and seen_at)
+        self.update_user_message_status_ps: PreparedStatement = self.session.prepare("""
+            UPDATE chat.user_message_status
+            SET delivered_at = ?, seen_at = ?
+            WHERE user_id = ? AND room_id = ? AND message_id = ?
+        """)
+
+        # Delete user message status
+        self.delete_user_message_status_ps: PreparedStatement = self.session.prepare("""
+            DELETE FROM chat.user_message_status
+            WHERE user_id = ? AND room_id = ? AND message_id = ?
+        """)
+
+    async def save_message(self, data: MessageCreate) -> MessageOut:
+        """Insert a new message"""
+        params = (
+            data.room_id,
+            data.bucket,
+            data.message_id,
+            data.author_id,
+            data.content,
+            data.status,
+            data.created_at or datetime.now(),
+            data.updated_at or datetime.now(),
         )
-        await await_response_future(future)
-
-        return message_id
+        future = self.session.execute_async(self.insert_message_ps, params)
+        await future.result
+        return MessageOut(**data.model_dump())
 
     async def list_messages(
         self,

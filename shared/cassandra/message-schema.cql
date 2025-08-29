@@ -5,22 +5,23 @@ WITH REPLICATION = {
 };
 
 
-CREATE TABLE IF NOT EXISTS chat.messages (
+CREATE TABLE chat.messages (
     room_id UUID,
-    message_id BIGINT,
+    bucket INT,
+    message_id UUID,
     author_id UUID,
     content TEXT,
-    media_ids LIST<UUID>,
+    status TEXT,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    PRIMARY KEY ((room_id), message_id)
+    PRIMARY KEY ((room_id, bucket), message_id)
 ) WITH CLUSTERING ORDER BY (message_id DESC);
 
-
-CREATE TABLE IF NOT EXISTS chat.message_user_status (
-    message_id UUID,
+CREATE TABLE chat.user_message_status (
     user_id UUID,
+    room_id UUID,
+    message_id UUID,
     delivered_at TIMESTAMP,
     seen_at TIMESTAMP,
-    PRIMARY KEY ((message_id), user_id)
-);
+    PRIMARY KEY ((user_id, room_id), message_id)
+) WITH CLUSTERING ORDER BY (message_id DESC);

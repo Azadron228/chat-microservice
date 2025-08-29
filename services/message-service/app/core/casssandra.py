@@ -11,14 +11,5 @@ cluster = Cluster(
 )
 
 
-@asynccontextmanager
-async def get_session():
-    try:
-        session = cluster.connect("chat")
-        yield session
-    finally:
-        pass
+session = cluster.connect("chat")
 
-async def await_response_future(future):
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, future.result)

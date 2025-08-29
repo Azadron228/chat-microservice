@@ -56,21 +56,21 @@ class MessageService:
             media_ids=media_ids,
         )
 
-        message = Message(
-            room_id=room_id,
-            message_id=message_id,
-            author_id=author_id,
-            content=content,
-            media_ids=media_ids or [],
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        # message = Message(
+        #     room_id=UUID(room_id),
+        #     message_id=message_id,
+        #     author_id=author_id,
+        #     content=content,
+        #     media_ids=media_ids or [],
+        #     created_at=datetime.now(),
+        #     updated_at=datetime.now(),
+        # )
 
-        # You may want to serialize before publishing
-        await self.broker.publish("chat.messages.to_broadcast", message.to_dict())
-        await self.broker.publish("chat.room.update_list", message.to_dict())
+        # # You may want to serialize before publishing
+        # await self.broker.publish("chat.messages.to_broadcast", message.to_dict())
+        # await self.broker.publish("chat.room.update_list", message.to_dict())
 
-        return message.to_dict()
+        return message_id
     
     async def list_messages(
         self,
