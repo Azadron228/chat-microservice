@@ -1,6 +1,14 @@
-FROM python:3.11
+FROM python:3.11-alpine
 
 WORKDIR /app
+
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libstdc++ \
+    lz4-dev \
+    make
 
 COPY requirements.txt requirements.txt 
 

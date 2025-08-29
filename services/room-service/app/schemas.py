@@ -52,6 +52,12 @@ class RoomUpdateLastMessage(BaseModel):
     author_id: str
 
 
+class RoomMemberOut(BaseModel):
+    user_id: str
+
+    class Config:
+        from_attributes = True
+
 class MemberAdd(BaseModel):
     room_id: uuid.UUID
     user_id: str

@@ -30,6 +30,11 @@ class RoomService:
         )
 
         return await self.room_repository.create_room(room_id, data)
+    
+    async def get_dm(self, user1_id, user2_id):
+        room_id = self.get_dm_id(user1_id, user2_id)
+
+        return await self.room_repository.get_room(room_id)
 
     async def get_room(self, room_id):
         return self.room_repository.get_room(room_id)

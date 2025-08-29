@@ -68,7 +68,7 @@ class MessageService:
 
         # You may want to serialize before publishing
         await self.broker.publish("chat.messages.to_broadcast", message.to_dict())
-        await self.broker.publish("chat.room.update_last_message", message.to_dict())
+        await self.broker.publish("chat.room.update_list", message.to_dict())
 
         return message.to_dict()
     
