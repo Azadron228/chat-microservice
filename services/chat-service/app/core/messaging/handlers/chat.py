@@ -10,5 +10,5 @@ async def to_broadcast_handler(msg):
     if not msg["room_id"]:
         return
     
-    await connection_manager.broadcast_room(room_id=msg["room_id"], message=json.dumps(msg))
+    await connection_manager.send_to_active_users(room_id=msg["room_id"], message=json.dumps(msg))
     
