@@ -28,7 +28,7 @@ async def get_user(
         )
     return user
 
-@router.get("me/", response_model=UserOut)
+@router.get("/me/", response_model=UserOut)
 async def get_current_user(
     user: User = Depends(get_current_user)
 ):
