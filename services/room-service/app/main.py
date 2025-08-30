@@ -27,8 +27,13 @@ async def lifespan(app: FastAPI):
         logger.info("Broker closed")
 
 
-app = FastAPI(lifespan=lifespan)
 
+app = FastAPI(
+    lifespan=lifespan,
+    servers=[
+        {"url": "https://localhost:8010/", "description": "Development server"},
+    ],
+)
 
 url = settings.POSTGRES_DB_URL
 logger.info(f"Connecting to Db with url: {url}")

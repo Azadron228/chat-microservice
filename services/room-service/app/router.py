@@ -10,7 +10,7 @@ from app.service import RoomService
 router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 
-@router.get("/", response_model=List[Union[RoomOut, DmRoomOut]])
+@router.get("/list", response_model=List[Union[RoomOut, DmRoomOut]])
 async def list_rooms(
     user: TokenPayload = Depends(get_current_user),
     service: RoomService = Depends(provide_room_service),

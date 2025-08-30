@@ -6,7 +6,11 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    servers=[
+        {"url": "https://localhost:8020/", "description": "Development server"},
+    ],
+)
 
 logger.info("Starting User Service...")
 logger.info(f"Database URL: {settings.jwks_url}")

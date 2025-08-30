@@ -96,10 +96,10 @@ class MessageRepository:
     async def save_message(self, data: MessageCreate) -> MessageOut:
         """Insert a new message"""
         params = (
-            data.room_id,
+            uuid.uuid4(),
             data.bucket,
-            data.message_id,
-            data.author_id,
+            uuid.uuid4(),
+            uuid.uuid4(),
             data.content,
             data.status,
             data.created_at or datetime.now(),
