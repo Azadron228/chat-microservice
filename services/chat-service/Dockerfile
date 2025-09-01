@@ -1,11 +1,17 @@
-FROM python:3.13-alpine
+FROM python:3.12-slim-trixie
 
-WORKDIR /app
+WORKDIR /app/
 
-COPY requirements.txt requirements.txt 
+COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
 
-RUN pip install -r requirements.txt
+ENV PATH="/app/.venv/bin:$PATH"
 
-COPY . .
+COPY ./pyproject.toml ./uv.lock /app/
+COPY --from=services-src /common /common
 
-ENTRYPOINT [ "uvicorn", "app.main:app", "--host", "0.0.0.0" ]
+RUN uv sync
+
+COPY ./app /app/app
+COPY ./protos /app/protos
+
+CMD [ "uvicorn", "app.main:app", "--host", "0.0.0.0" ]

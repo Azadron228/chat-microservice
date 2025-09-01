@@ -1,0 +1,22 @@
+[project]
+name = "chat-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.12.15",
+    "common",
+    "fastapi>=0.116.1",
+    "grpcio>=1.74.0",
+    "grpcio-tools>=1.74.0",
+    "httptools>=0.6.4",
+    "pydantic-settings>=2.10.1",
+    "pyjwt[crypto]>=2.10.1",
+    "uvicorn>=0.35.0",
+    "uvloop>=0.21.0",
+    "websockets>=15.0.1",
+]
+
+[tool.uv.sources]
+common = { path = "../common/dist/common-0.1.0-py3-none-any.whl" }

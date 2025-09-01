@@ -1,11 +1,9 @@
 fastapi
 pydantic
-nats-py
 uvicorn
 pydantic-settings
 websockets
 grpcio
 grpcio-tools
-pyjwt
+pyjwt[crypto]
 aiohttp
-cryptography

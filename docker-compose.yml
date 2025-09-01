@@ -4,6 +4,8 @@ services:
     build:
       context: services/chat-service/
       dockerfile: Dockerfile
+      additional_contexts:
+        services-src: services
     ports:
       - "8000:8000"
     env_file:
@@ -12,9 +14,6 @@ services:
       chat-network:
         aliases:
           - chat.local
-    depends_on:
-      scylla:
-        condition: service_healthy
     develop:
       watch:
         - action: sync+restart

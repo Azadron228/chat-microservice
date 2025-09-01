@@ -1,7 +1,7 @@
 import uuid
 import grpc
 from app.core.jsonrpc.dispatcher import JsonRpcRouter
-from app.core.messaging.factory import broker
+from common.messaging.factory import broker
 from protos import message_pb2 as message_pb2
 from protos import message_pb2_grpc as message_pb2_grpc
 import logging

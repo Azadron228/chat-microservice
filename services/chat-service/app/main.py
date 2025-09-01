@@ -1,10 +1,10 @@
 from contextlib import asynccontextmanager
 import logging
 from fastapi import FastAPI
-from app.core.messaging.factory import broker
+from common.messaging.factory import broker
 from app.api.jsonrpc import router
 import app.core.logging
-from app.core.messaging.handlers import subscribe_handlers
+from common.messaging.handlers import subscribe_handlers
 
 logger = logging.getLogger(__name__)
 
